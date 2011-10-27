@@ -1,0 +1,19 @@
+{
+  "author": "Stephen Sugden <stephen@betsmartmedia.com> (www.betsmartmedia.com)",
+  "name": "lazy",
+  "description": "ReST service framework",
+  "version": "0.0.0",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/grncdr/lazy.git"
+  },
+  "main": "./lib/lazy",
+  "engines": {
+    "node": "~0.4.12"
+  },
+	"dependencies": {
+    "connect": "*",
+    "uri-template": "*"
+	},
+  "devDependencies": {}
+}
