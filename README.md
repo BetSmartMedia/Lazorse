@@ -98,3 +98,7 @@ The above, oh and tests would be good.
 ## License
 
 MIT
+
+[express]: http://expressjs.com
+[zappa]: http://zappajs.org
+[coffeemate]: https://github.com/kadirpekel/coffeemate
