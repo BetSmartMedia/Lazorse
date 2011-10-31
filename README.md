@@ -1,38 +1,40 @@
 # LAZORSE!
 
-What do lazers and horses have in common? They will both kill you without a second thought.
+What do lazers and horses have in common? They will both kill you without a second thought (or a first thought).
 
 Also, they share a few phonemes with "lazy" and "resource", which is what Lazorse is all about.
 
 ## K, wtf is it?
 
-Lazorse borrows heavily from [other][zappa] [awesome][coffeemate]
-[web frameworks][express] but with a couple of twists designed to make writing
-machine-consumable APIs a little easier.
+Lazorse is a connect middleware stack that routes requests, coerces parameters,
+dispatches to handlers, and renders a response. It borrows heavily from
+[other][zappa] [awesome][coffeemate] [web frameworks][express] but with a couple
+of twists designed to make writing machine-consumable ReSTful APIs a little
+easier.
 
 ### Routing
 
 First and foremost of these is the route syntax. It's an implementation of the
 [draft spec][uri template rfc] for URI templates. Lazorse by default owns the
 `/` and `/schema/*` routes. The root route will respond with an object that maps
-all registered routes/URI templates to a specifications object. These
-specifications are introspected from your route definition, so a route like:
+all registered routes/URI templates to a route object. So an app with a single
+route like:
 
 ```coffee
 greetingLookup = english: "Hi", french: "Salut"
 
-@route '/greeting/{language}':
+@route '/{language}/greeting':
   description: "Retrieve or store per-language greetings"
   shortName: 'localGreeting'
-  GET: -> @ok greetingLookup[language]
-  POST: -> greetingLookup[language] = @body; @ok()
+  GET: -> @ok greetingLookup[@language]
+  POST: -> greetingLookup[@language] = @req.body; @ok()
 ```
 
 Will return a spec object like:
 
 ```json
 {
-  "/greetings/{language}": {
+  "/{language}/greetings": {
     "description": "Retrieve or store per-language greetings",
     "shortName": "localGreeting",
     "methods": ["GET", "POST"]
@@ -67,14 +69,14 @@ handler functions.
 Of course you're probably wondering about those handler functions. Each handler
 function is called with `this` bound to a context containing the following keys:
 
-	- `req` and `res`: request and response objects direct from connect.
-	- `data` and `ok`: Callbacks that will set the data property for the rendering
-		layer. (Don't worry, that's next). The only difference is that `ok` does
-		_not_ handle errors, it only accepts a single argument and assumes that's
-		what you want to return to the client. `data` on the other hand, will treat
-		the first argument as an error in typical node callback style.
-	- `link`: Takes a route shortName and a context object and returns the result
-		of expanding the corresponding URI template in that context.
+ - `req` and `res`: request and response objects direct from connect.
+ - `data` and `ok`: Callbacks that will set the data property for the rendering
+    layer. (Don't worry, that's next). The only difference is that `ok` does
+    _not_ handle errors, it only accepts a single argument and assumes that's
+    what you want to return to the client. `data` on the other hand, will treat
+    the first argument as an error in typical node callback style.
+ - `link`: Takes a route shortName and a context object and returns the result
+    of expanding the corresponding URI template in that context.
 
 Although the examples have taken no parameters, handlers _do_ get one parameter:
 the request context. This means you can use fat-arrow handlers if necessary.
