@@ -102,3 +102,4 @@ MIT
 [express]: http://expressjs.com
 [zappa]: http://zappajs.org
 [coffeemate]: https://github.com/kadirpekel/coffeemate
+[uri template rfc]: http://tools.ietf.org/html/draft-gregorio-uritemplate-07
