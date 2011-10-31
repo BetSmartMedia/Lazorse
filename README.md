@@ -44,7 +44,7 @@ Will return a spec object like:
 
 All of the keys are optional, but chances are you want to include at least one
 HTTP method handler, or your route will be unreachable. Additionally, the
-shortname can be nice for making the 
+shortname can be nice for giving client a consistent way to refer to the URI.
 
 ### Coercions
 
