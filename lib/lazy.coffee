@@ -25,45 +25,32 @@ class LazyApp
 
     @_prefix = ''
     # Set up the default routes / and /schema/{name}
-    @route
-      index:
-        template: '/'
-        description: "Index of all routes"
-        GET: (ctx) =>
-          specs = {}
-          for name, spec of @routes
-            specs[spec.template] =
-              shortName: name
-              description: spec.description
-              methods: (k for k of spec when k in METHODS)
-          ctx.ok specs
-      schemas:
-        template: '/schema/{variableName}'
-        GET: (ctx) =>
-          console.dir schemasCtx: ctx, ok: ctx.ok
-          if s = @schemas[ctx.variableName]
-            return ctx.ok s
-          ctx.next()
+    @route '/':
+      shortName: 'routeIndex'
+      description: "Index of all routes"
+      GET: (ctx) =>
+        specs = {}
+        for shortName, spec of @routes
+          specs[spec.template] =
+            shortName: shortName
+            description: spec.description
+            methods: (k for k of spec when k in METHODS)
+        ctx.ok specs
 
     builder.call @
 
   route: (specs) ->
-    for name, spec of specs
-      spec.template ?= "/#{name}"
+    for template, spec of specs
+      if spec.shortName and @routes[spec.shortName]?
+        throw new Error "Duplicate path name #{spec.shortName}"
 
-      if @routes[name]?
-        throw new Error "Duplicate path name #{name}"
-      if spec.template in @templates
-        throw new Error "Duplicate template #{template}"
+      @register template, spec
 
-      @register name, spec
-
-  register: (name, spec) ->
-    spec.name = name
-    spec.template = parser.parse @_prefix + spec.template
+  register: (template, spec) ->
+    spec.template = parser.parse @_prefix + template
+    @routes[spec.shortName] = spec if spec.shortName
     for method in METHODS when handler = spec[method]
       @routeTable[method].push spec
-    @routes[name] = spec
 
   helper: (helpers) ->
     for name, helper of helpers
