@@ -1,4 +1,4 @@
-# Lazy, for when you're feeling ReSTful
+# Lazorse: lazy resources, lazers, and horses.
 
 METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']
 
@@ -7,9 +7,10 @@ parser = require 'uri-template'
 class LazyApp
   constructor: (builder) ->
     app = @
-    @renderer = renderJSON
+    @renderer = contentTypeRenderer
     @helpers =
       ok:   (data) ->
+        @res.statusCode = 200
         @res.data = data
         @next()
       data: (err, data) -> return @next err if err?; @ok data
@@ -28,12 +29,15 @@ class LazyApp
     @route '/':
       shortName: 'routeIndex'
       description: "Index of all routes"
+      examples:
+        'GET /': {shortName: 'routeIndex', description: "Index of all routes", methods: ["GET"]}
       GET: (ctx) =>
         specs = {}
         for shortName, spec of @routes
           specs[spec.template] =
             shortName: shortName
             description: spec.description
+            examples: spec.examples
             methods: (k for k of spec when k in METHODS)
         ctx.ok specs
 
@@ -75,12 +79,10 @@ class LazyApp
       name = varNames[i++]
       return errBack null unless name?
       coercion = @coercions[name]
-      console.dir "Coercing #{name}"
       coercion.call vars, vars[name], (e, newValue) ->
         return errBack e if e?
         #if e == 'drop' then delete vars[name] else 
         vars[name] = newValue
-        console.dir "Set #{name} to #{vars[name]}"
         nextCoercion()
     nextCoercion()
   
@@ -93,7 +95,6 @@ class LazyApp
       throw new Error "#{mod} does not have a .include method"
     restorePrefix = @_prefix
     @_prefix = path
-    console.dir "including #{mod} at #{path}"
     mod.include.call @
     @_prefix = restorePrefix
 
@@ -108,7 +109,6 @@ class LazyApp
 # Because this is a delegation chain, you need to be careful not to mask out helper
 # names with variable names.
   router: (req, res, next) ->
-    console.dir "Routing #{req.url}"
     app = @
     try
       ctx =
@@ -135,20 +135,30 @@ class LazyApp
 # A default handle function for connect
   handle: (req, res, next) ->
     @router req, res, (err) =>
-      return next err if err?
+      if err?
+        return next err if err?
       @renderer req, res, next
 
-renderJSON = (req, res, next) ->
+contentTypeRenderer = (req, res, next) ->
   if not res.data and not req.route
     return next new NoResponseData
-  res.setHeader('Content-Type', 'application/json')
-  res.end JSON.stringify(res.data)
+  if not req.route
+    return next()
+  render = require './render'
+  if req.headers.accept and [types, _] = req.headers.accept.split ';'
+    for type in types.split ','
+      if render[type]?
+        return render[type] req, res, next
+  return render['application/json'] req, res, next
 
 module.exports = lazy = (args...) ->
   app = new LazyApp args...
   connect = require 'connect'
   server = connect.createServer()
-  app.stack server
+  server.use connect.favicon()
+  server.use connect.logger()
+  server.use app
+  server.use connect.errorHandler()
   server.listen 3000
 
 lazy.app = (args...) -> new LazyApp args...
@@ -156,4 +166,9 @@ lazy.app = (args...) -> new LazyApp args...
 lazy.NoResponseData = NoResponseData = ->
   @message = "Response data is undefined"
   @code = 500
+  Error.captureStackTrace @
+
+lazy.InvalidParameter = InvalidParameter = (type, thing) ->
+  @message = "Bad Request: invalid #{type} #{thing}"
+  @code = 400
   Error.captureStackTrace @

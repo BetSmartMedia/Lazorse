@@ -83,11 +83,24 @@ the request context. This means you can use fat-arrow handlers if necessary.
 
 ### Rendering
 
-Lazorse include zero templating. Instead, rendering is handled as another
-middleware in the stack. By default Lazorse renders whatever is in
-response.data as JSON. To over-ride this behaviour, replace this.renderer inside
-your app builder. Patches that do things like inspect the 'Accept' header are
-more than welcome!
+Lazorse includes no templating. Instead, rendering is handled as another
+middleware in the stack. The default rendering middleware supports (bare-bones)
+HTML and JSON. It inspects the `Accept` header to see what the client wants,
+and falls back to JSON when it can't provide it. You can easily add or override
+the renderer for a new content type like so:
+
+```coffee
+render = require('lazorse/render')
+render['application/vnd.wonka-ticket'] = (req, res, next) ->
+	ticket = res.data
+	res.write bufferOverflowThatTransportsClientToTheChocolateFactory()
+	res.end "pwnd"
+```
+
+Obviously, your own renderers would do something actually useful. In addition to
+`res.data`, Lazorse will add a `req.route` property that is the route object
+that serviced the request. This could be used to do something like look up a
+template or XML schema with `req.route.shortName`.
 
 ### Schemas
 
