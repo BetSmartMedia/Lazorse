@@ -15,5 +15,7 @@
     "connect": "*",
     "uri-template": "*"
   },
-  "devDependencies": {}
+	"devDependencies": {
+		"vows": "~0.5.13"
+	}
 }
