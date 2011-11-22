@@ -2,7 +2,7 @@
 
 METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']
 
-require './uri-template-matchpatch'
+#require './uri-template-matchpatch'
 parser = require 'uri-template'
 
 class LazyApp
@@ -120,6 +120,10 @@ class LazyApp
         return next() unless r?
         vars = r.template.match req.url
         return nextHandler() unless vars
+        # flatten any arrays into single comma-delimited strings
+        for k,v of vars
+          continue unless v instanceof Array
+          if vars[k].length then vars[k] = v.join ',' else delete vars[k]
         req.route = r
         req.vars = vars
       nextHandler()
