@@ -63,7 +63,7 @@ Expression::match = (input, vars) ->
         else v = named; named = null
       else
         v = ordered.shift()
-    return false unless v? or @op.first in queryStringOps
+    return false unless v or @op.first in queryStringOps
     vars[p.name] = v || []
   remaining = input.substring len
   console.log "Remaining: #{remaining}"
