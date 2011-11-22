@@ -8,6 +8,7 @@ class LazyApp
   constructor: (builder) ->
     app = @
     @renderer = contentTypeRenderer
+
     @helpers =
       ok:   (data) ->
         @res.statusCode = 200
@@ -70,19 +71,19 @@ class LazyApp
       throw new Error "Duplicate coercion name: #{name}" if @coercions[name]?
       @coercions[name] = cb
 
-  coerceAll: (vars, errBack) ->
-    varNames = (k for k in Object.keys vars when @coercions[k]?)
-    varNames.sort (a, b) -> vars.req.url.indexOf(a) - vars.req.url.indexOf(b)
+  coerceAll: (req, res, next) ->
+    ctx = @build_context req, res, next
+    varNames = (k for k in Object.keys req.vars when @coercions[k]?)
+    varNames.sort (a, b) -> req.url.indexOf(a) - req.url.indexOf(b)
     i = 0
-    nextCoercion = (err) =>
-      return errBack err if err?
+    nextCoercion = =>
       name = varNames[i++]
-      return errBack null unless name?
+      return next null unless name?
       coercion = @coercions[name]
-      coercion.call vars, vars[name], (e, newValue) ->
-        return errBack e if e?
-        #if e == 'drop' then delete vars[name] else 
-        vars[name] = newValue
+      coercion.call ctx, req.vars[name], (e, newValue) ->
+        return next e if e?
+        #if e == 'drop' then delete req.vars[name] else 
+        req.vars[name] = newValue
         nextCoercion()
     nextCoercion()
   
@@ -109,35 +110,47 @@ class LazyApp
 # Because this is a delegation chain, you need to be careful not to mask out helper
 # names with variable names.
   router: (req, res, next) ->
-    app = @
     try
-      ctx =
-        app: app, req: req, res: res, next: next
-      ctx.__proto__ = app.helpers
-
       i = 0
-      routes = app.routeTable[req.method]
+      routes = @routeTable[req.method]
       nextHandler = (err) ->
         return next err if err? and err != 'route'
         r = routes[i++]
         return next() unless r?
         vars = r.template.match req.url
         return nextHandler() unless vars
-        vars.__proto__ = ctx
-        app.coerceAll vars, (err) ->
-          return nextHandler err if err?
-          ctx.req.route = r
-          r[req.method].call vars, vars
+        req.route = r
+        req.vars = vars
       nextHandler()
+      next()
     catch err
       next err
 
-# A default handle function for connect
+# Call the route handler
+  dispatch: (req, res, next) ->
+    ctx = @build_context req, res, next
+    vars = req.vars
+    vars.__proto__ = ctx
+    # the route handler should call next()
+    req.route[req.method].call vars, vars
+
+# Build a 'this' context for middleware handlers
+# that call functions (dispatch, coerceAll)
+  build_context: (req, res, next) ->
+    app = @
+    ctx = app: app, req: req, res: res, next: next
+    ctx.__proto__ = app.helpers
+    ctx
+
+# A default handle function for Connect middleware
   handle: (req, res, next) ->
     @router req, res, (err) =>
-      if err?
+      return next err if err?
+      @coerceAll req, res, next, (err) =>
         return next err if err?
-      @renderer req, res, next
+        @dispatch req, res, next, (err) =>
+          return next err if err?
+          @renderer req, res, next
 
 contentTypeRenderer = (req, res, next) ->
   if not res.data and not req.route
