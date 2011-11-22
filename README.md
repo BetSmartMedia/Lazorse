@@ -14,11 +14,14 @@ easier.
 
 ### Routing
 
-First and foremost of these is the route syntax. It's an implementation of the
-[draft spec][uri template rfc] for URI templates. Lazorse by default owns the
-`/` and `/schema/*` routes. The root route will respond with an object that maps
-all registered routes/URI templates to a route object. So an app with a single
-route like:
+First and foremost of these is the route syntax: it's the same syntax as the 
+[draft spec][uri template rfc] for URI templates, but extends them with
+parameter matching semantics as well. These are covered more extensively later
+in this document.
+
+Lazorse by default owns the `/` and `/schema/*` routes. The root route will
+respond with an object that maps all registered routes/URI templates to a
+route object. So an app with a single route like:
 
 ```coffee
 greetingLookup = english: "Hi", french: "Salut"
@@ -102,13 +105,30 @@ Obviously, your own renderers would do something actually useful. In addition to
 that serviced the request. This could be used to do something like look up a
 template or XML schema with `req.route.shortName`.
 
+### URI Template matching
+
+The matching semantics for URI templates are my addition to the RFC that
+specifies their expansion algorithm. My intention is to meet and maintain the
+constraint that expanding a template with the vars it returned when parsing a
+URL will return the same URL. In order to do this we need the following rules
+for what can and cannot match:
+
+  * All parameters, excepting query string parameters, are required.
+  * Query string parameters cannot do positional matching. E.g. ?one&two&three
+		will always fail. You must use named parameters in a query string.
+  * Query string parameters with an explode modifier (e.g. {?list*}) currently
+		will parse differently than they expand. I strongly recommend not to use
+		the explode modifier for query string params
+
 ### Schemas
 
 TODO - Determine if these are even useful.
 
 ## TODO
 
-The above, oh and tests would be good.
+* More tests, as always.
+* Factor different operators into different Expression specializations,
+	hopefully this will help clean up some of the logic in Expression::match
 
 ## License
 

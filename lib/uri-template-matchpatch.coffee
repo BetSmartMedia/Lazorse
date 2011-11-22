@@ -11,7 +11,9 @@ Template::match = (input) ->
   for expr in @expressions
     inQS = expr.op.first in queryStringOps
     remaining = expr.match input, vars
-    if remaining is false  and not inQS
+    if remaining is null
+      return false
+    if remaining is false and not inQS
       return false
     input = remaining
   if input and not inQS
@@ -21,12 +23,18 @@ Template::match = (input) ->
 # Matches an input string against the expression, assigning matched expression
 # parameter names as properties of the passed in `vars` object.
 #
-# Returns false if the match failed, or the remaining input if the match succeeds
+# This has a somewhat ugly tri-state return:
+#   * false if the match failed 
+#   * null if the enclosing template should be forced to fail as well
+#   * the remaining input if the match succeeds
 Expression::match = (input, vars) ->
-  console.log "Matching #{input} against #{@params.map (p) -> p.name}"
   len = 0 # The total length of matched input
-  if @op.first not in queryStringOps
-    input = input.split('?').shift()
+  inQS = @op.first in queryStringOps
+  if not inQS
+    [input, qs] = input.split '?'
+    qs = if qs then '?'+qs else ''
+  else
+    qs = ''
 
   if @op.first
     return false unless input.substring(0,1) is @op.first
@@ -34,7 +42,6 @@ Expression::match = (input, vars) ->
     len++
 
   if @suffix
-    console.log "Checking for suffix #{@suffix}"
     return false unless m = input.match @suffix
     len += @suffix.length
     matchable = input.substring 0, m.index
@@ -48,7 +55,10 @@ Expression::match = (input, vars) ->
   for part in matchable.split @op.sep
     [n, v] = part.split '='
     if not v?
-      ordered.push unescape n
+      if inQS
+        return null
+      else
+        ordered.push unescape n
     else if named[n]?
       named[n].push unescape v
     else
@@ -56,15 +66,18 @@ Expression::match = (input, vars) ->
   
   for p in @params
     if (v = named[p.name])?
-      # Got a named parameter, nothing else to do
+      if inQS
+        flat = []
+        for vv in v
+          flat.push.apply(flat, vv.split ',')
+        v = flat
     else
       if p.explode
         if ordered.length then v = ordered; ordered = null
         else v = named; named = null
       else
         v = ordered.shift()
-    return false unless v or @op.first in queryStringOps
-    vars[p.name] = v || []
+    return false unless v or inQS
+    vars[p.name] = v or []
   remaining = input.substring len
-  console.log "Remaining: #{remaining}"
-  remaining
+  remaining + qs
