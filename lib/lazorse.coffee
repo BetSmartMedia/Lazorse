@@ -111,6 +111,8 @@ class LazyApp
 # Because this is a delegation chain, you need to be careful not to mask out helper
 # names with variable names.
   router: (req, res, next) ->
+    # make sure req.vars is set, as coerceAll() expects it
+    req.vars = {}
     try
       i = 0
       routes = @routeTable[req.method]
@@ -129,6 +131,7 @@ class LazyApp
 
 # Call the route handler
   dispatch: (req, res, next) ->
+    return unless req.route?
     ctx = @build_context req, res, next
     vars = req.vars
     vars.__proto__ = ctx
