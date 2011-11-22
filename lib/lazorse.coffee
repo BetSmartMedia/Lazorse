@@ -2,6 +2,7 @@
 
 METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']
 
+require './uri-template-matchpatch'
 parser = require 'uri-template'
 
 class LazyApp

@@ -5,9 +5,9 @@
   "version": "0.0.2",
   "repository": {
     "type": "git",
-    "url": "git://github.com/grncdr/lazy.git"
+    "url": "git://github.com/BetSmartMedia/Lazorse.git"
   },
-  "main": "./lib/lazy",
+  "main": "./lib/lazorse",
   "engines": {
     "node": "~0.4.12"
   },
