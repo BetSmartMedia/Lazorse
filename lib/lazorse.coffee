@@ -81,6 +81,8 @@ class LazyApp
       name = varNames[i++]
       return next null unless name?
       coercion = @coercions[name]
+      # Fun Fact: this will asplode everything
+      #console.dir @
       coercion.call ctx, req.vars[name], (e, newValue) ->
         return next e if e?
         #if e == 'drop' then delete req.vars[name] else 
@@ -124,8 +126,8 @@ class LazyApp
         return nextHandler() unless vars
         req.route = r
         req.vars = vars
+        next()
       nextHandler()
-      next()
     catch err
       next err
 
@@ -133,18 +135,17 @@ class LazyApp
   dispatch: (req, res, next) ->
     return unless req.route?
     ctx = @build_context req, res, next
-    vars = req.vars
-    vars.__proto__ = ctx
     # the route handler should call next()
-    req.route[req.method].call vars, vars
+    req.route[req.method].call ctx, ctx
 
 # Build a 'this' context for middleware handlers
 # that call functions (dispatch, coerceAll)
   build_context: (req, res, next) ->
-    app = @
-    ctx = app: app, req: req, res: res, next: next
-    ctx.__proto__ = app.helpers
-    ctx
+    ctx = app: @, req: req, res: res, next: next
+    ctx.__proto__ = @helpers
+    vars = req.vars
+    vars.__proto__ = ctx
+    vars
 
 # A default handle function for Connect middleware
   handle: (req, res, next) ->
