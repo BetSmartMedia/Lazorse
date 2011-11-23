@@ -41,6 +41,9 @@ class LazyApp
             description: spec.description
             examples: spec.examples
             methods: (k for k of spec when k in METHODS)
+        # Custom renderers can pick up the schema here, as they may need
+        # to differentiate it from regular response data.
+        ctx.res.spec = specs
         ctx.ok specs
 
     builder.call @
