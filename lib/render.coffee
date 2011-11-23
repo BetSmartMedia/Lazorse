@@ -54,3 +54,5 @@ htmlDict = (res, array) ->
 exports['application/json'] = (req, res, next) ->
   res.setHeader 'Content-Type', 'application/json'
   res.end JSON.stringify res.data
+
+# vim: set et:

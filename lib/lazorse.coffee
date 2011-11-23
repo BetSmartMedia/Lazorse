@@ -133,7 +133,7 @@ class LazyApp
 
 # Call the route handler
   dispatch: (req, res, next) ->
-    return unless req.route?
+    return next() unless req.route?
     ctx = @build_context req, res, next
     # the route handler should call next()
     req.route[req.method].call ctx, ctx
@@ -190,3 +190,5 @@ lazy.InvalidParameter = InvalidParameter = (type, thing) ->
   @message = "Bad Request: invalid #{type} #{thing}"
   @code = 400
   Error.captureStackTrace @
+
+# vim: set et:
