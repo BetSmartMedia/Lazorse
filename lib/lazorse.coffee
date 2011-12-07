@@ -41,6 +41,7 @@ class LazyApp
             shortName: shortName
             description: spec.description
             examples: spec.examples
+            prefix: spec.prefix
             methods: (k for k of spec when k in METHODS)
         specs.sort (a, b) ->
           return 0 if a.shortName == b.shortName
@@ -58,6 +59,7 @@ class LazyApp
 
   register: (template, spec) ->
     spec.template = parser.parse @_prefix + template
+    spec.prefix = @_prefix
     @routes[spec.shortName] = spec if spec.shortName
     for method in METHODS when handler = spec[method]
       @routeTable[method].push spec
