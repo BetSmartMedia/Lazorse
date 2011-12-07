@@ -37,7 +37,7 @@ class LazyApp
         specs = []
         for shortName, spec of @routes
           specs.push
-            template: spec.template
+            template: String spec.template
             shortName: shortName
             description: spec.description
             examples: spec.examples
