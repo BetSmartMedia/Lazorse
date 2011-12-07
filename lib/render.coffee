@@ -6,12 +6,12 @@ exports['text/html'] = (req, res, next) ->
     console.dir "Rendering doc page"
     res.write '<link rel="stylesheet" type="text/css" href="/docs.css"/>'
     res.write "</head><body>"
-    for tpl, route of res.data
-      console.dir template: tpl, route: route
+    for route in res.data
       res.write '<div class="route">'
       res.write "<h1>#{route.shortName}</h1>" if route.shortName
-      res.write "<h2>#{tpl}</h2>"
+      res.write "<h2>#{route.template}</h2>"
       delete route.shortName
+      delete route.template
       examples = route.examples
       delete route.examples
       htmlDict res, route

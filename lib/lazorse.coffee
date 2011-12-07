@@ -34,13 +34,17 @@ class LazyApp
       examples:
         'GET /': {shortName: 'routeIndex', description: "Index of all routes", methods: ["GET"]}
       GET: (ctx) =>
-        specs = {}
+        specs = []
         for shortName, spec of @routes
-          specs[spec.template] =
+          specs.push
+            template: spec.template
             shortName: shortName
             description: spec.description
             examples: spec.examples
             methods: (k for k of spec when k in METHODS)
+        specs.sort (a, b) ->
+          return 0 if a.shortName == b.shortName
+          return(if a.shortName < b.shortName then -1 else 1)
         ctx.ok specs
 
     builder.call @
