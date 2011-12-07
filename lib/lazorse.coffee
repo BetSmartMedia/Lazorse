@@ -85,10 +85,8 @@ class LazyApp
     i = 0
     nextCoercion = =>
       name = varNames[i++]
-      return next null unless name?
+      return next() unless name?
       coercion = @coercions[name]
-      # Fun Fact: this will asplode everything
-      #console.dir @
       coercion.call ctx, req.vars[name], (e, newValue) ->
         return next e if e?
         #if e == 'drop' then delete req.vars[name] else 
@@ -157,9 +155,9 @@ class LazyApp
   handle: (req, res, next) ->
     @router req, res, (err) =>
       return next err if err?
-      @coerceAll req, res, next, (err) =>
+      @coerceAll req, res, (err) =>
         return next err if err?
-        @dispatch req, res, next, (err) =>
+        @dispatch req, res, (err) =>
           return next err if err?
           @renderer req, res, next
 
@@ -183,7 +181,7 @@ module.exports = lazy = (args...) ->
   server.use connect.logger()
   server.use app
   server.use connect.errorHandler()
-  server.listen 3000
+  server.listen app.port or 3000
 
 lazy.app = (args...) -> new LazyApp args...
 
