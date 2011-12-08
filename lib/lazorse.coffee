@@ -44,6 +44,8 @@ class LazyApp
             prefix: spec.prefix
             methods: (k for k of spec when k in METHODS)
         specs.sort (a, b) ->
+          if a.prefix != b.prefix
+            return(if a.prefix < b.prefix then -1 else 1)
           return 0 if a.shortName == b.shortName
           return(if a.shortName < b.shortName then -1 else 1)
         ctx.ok specs
