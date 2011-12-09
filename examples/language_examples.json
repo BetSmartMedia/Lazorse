@@ -1,0 +1,49 @@
+{
+  "routeIndex": [
+    {
+      "method": "GET",
+      "path": "/",
+      "response": [
+        {
+          "template": "/greeting/{language}",
+          "shortName": "localGreeting",
+          "description": "Retrieve or store a per-language greeting",
+          "examples": [
+            {
+              "method": "GET",
+              "path": "/greeting/english",
+              "response": {
+                "greeting": "Hi",
+                "language": "english"
+              }
+            }
+          ],
+          "prefix": "",
+          "methods": [
+            "GET",
+            "POST"
+          ]
+        },
+        {
+          "template": "/",
+          "shortName": "routeIndex",
+          "description": "Index of all routes",
+          "prefix": "",
+          "methods": [
+            "GET"
+          ]
+        }
+      ]
+    }
+  ],
+  "localGreeting": [
+    {
+      "method": "GET",
+      "path": "/greeting/english",
+      "response": {
+        "greeting": "Hi",
+        "language": "english"
+      }
+    }
+  ]
+}

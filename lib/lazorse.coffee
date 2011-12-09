@@ -4,9 +4,15 @@ METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']
 
 require './uri-template-matchpatch'
 parser = require 'uri-template'
+# Used for loading example request JSON files
+{readFileSync} = require 'fs'
 
 class LazyApp
-  constructor: (builder) ->
+  constructor: (init, builder) ->
+    if 'function' == typeof init
+      builder = init
+      init = {}
+
     app = @
     @renderer = contentTypeRenderer
 
@@ -27,15 +33,16 @@ class LazyApp
       @routeTable[method] = []
 
     @_prefix = ''
-    # Set up the default routes / and /schema/{name}
-    @route '/':
+
+    # Set up the default index route
+    indexPath = (init.indexPath? and init.indexPath) or '/'
+    defaultRoutes = {}
+    defaultRoutes[indexPath] =
       shortName: 'routeIndex'
       description: "Index of all routes"
-      examples:
-        'GET /': {shortName: 'routeIndex', description: "Index of all routes", methods: ["GET"]}
-      GET: (ctx) =>
+      GET: ->
         specs = []
-        for shortName, spec of @routes
+        for shortName, spec of app.routes
           specs.push
             template: String spec.template
             shortName: shortName
@@ -48,9 +55,22 @@ class LazyApp
             return(if a.prefix < b.prefix then -1 else 1)
           return 0 if a.shortName == b.shortName
           return(if a.shortName < b.shortName then -1 else 1)
-        ctx.ok specs
+        @ok specs
 
-    builder.call @
+    @route defaultRoutes
+
+    builder.call @ if 'function' == typeof builder
+    @loadExamples init.examples
+
+  loadExamples: (examples) ->
+    if not examples? then return
+    if 'string' == typeof examples
+      try
+        examples = JSON.parse readFileSync examples, 'utf8'
+      catch e
+        console.warn "Failed to load examples from #{examples}"
+    for shortName, exs of examples
+      @routes[shortName]?.examples = exs
 
   route: (specs) ->
     for template, spec of specs

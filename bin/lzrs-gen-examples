@@ -1,0 +1,43 @@
+#!/usr/bin/env coffee
+usage = """
+Usage:
+
+bin/update_examples.coffee [filename='./examples.json'] [host=localhost] [port=3000]
+"""
+
+
+{request} = require 'http'
+{argv} = process
+{readFileSync, writeFileSync} = require 'fs'
+
+argv.shift(); argv.shift()
+
+if argv[0] == '-h' or argv[0] == '--help'
+  console.log usage
+
+file = argv.shift() or './examples.json'
+host = argv.shift() or 'localhost'
+port = argv.shift() or 3000
+port = Number port
+
+allExamples = JSON.parse readFileSync file, 'utf8'
+
+waiting = 0
+
+performRequest = (example) ->
+  waiting += 1
+  {method, path, body} = example
+  req = request {method, host, port, path, body}, (res) ->
+    example.response = ''
+    res.setEncoding 'utf8'
+    res.on 'data', (d) -> example.response += d
+    res.on 'end', ->
+      example.response = JSON.parse example.response
+      unless (waiting -= 1)
+        writeFileSync file, JSON.stringify allExamples, null, '  '
+
+  req.end body
+  
+for shortName, examples of allExamples
+  for example in examples
+    performRequest example

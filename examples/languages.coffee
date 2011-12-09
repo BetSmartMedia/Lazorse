@@ -6,7 +6,6 @@ lazorse ->
   @route "/greeting/{language}":
     description: "Retrieve or store a per-language greeting"
     shortName: 'localGreeting'
-    examples: 'GET /greeting/enGLish': greeting: "Hi", language: "english"
     GET:  -> @ok greeting: greetingLookup[@language], language: @language
     POST: -> greetingLookup[@language] = @req.body; @ok()
 
@@ -17,3 +16,5 @@ lazorse ->
     unless greetingLookup[lang]?
       return next new lazorse.InvalidParameter 'language', lang
     next null, lang
+
+  @loadExamples __dirname + '/language_examples.json'

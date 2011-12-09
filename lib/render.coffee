@@ -17,8 +17,8 @@ exports['text/html'] = (req, res, next) ->
       htmlDict res, route
       if examples?
         res.write "<h3>Examples</h3>"
-        for request, response of examples
-          res.write "<pre class='example'>#{request}\n#{JSON.stringify response}</pre>"
+        for e in examples
+          res.write "<pre class='example'>#{e.method} #{e.path}\n\n#{JSON.stringify e.response, null, 2}</pre>"
       res.write '</div>'
   else
     res.write "</head><body>"
