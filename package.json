@@ -2,15 +2,19 @@
   "author": "Stephen Sugden <stephen@betsmartmedia.com> (www.betsmartmedia.com)",
   "name": "lazorse",
   "description": "The lazy programmers ReST service framework",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "repository": {
     "type": "git",
     "url": "git://github.com/BetSmartMedia/Lazorse.git"
   },
   "main": "./lib/lazorse",
-	"files": [
-		"./lib", "./bin", "./src", "./examples", "./README.md"
-		],
+  "files": [
+    "./lib",
+    "./bin",
+    "./src",
+    "./examples",
+    "./README.md"
+  ],
   "engines": {
     "node": "~0.4.12"
   },
