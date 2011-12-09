@@ -19,8 +19,8 @@ First and foremost of these is the route syntax: it's the same syntax as the
 parameter matching semantics as well. See the bottom of this document for more
 details.
 
-Lazorse by default owns the `/` and routes. The `/` route will respond with an
-index that maps all registered URI templates to a route specification, including
+Lazorse by default owns the index (`/`) route. The index route responds to GET
+a mapping of all registered URI templates to their route specification, including
 a description and examples if they are available. So an app with a single route
 like:
 
