@@ -16,12 +16,13 @@ easier.
 
 First and foremost of these is the route syntax: it's the same syntax as the 
 [draft spec][uri template rfc] for URI templates, but extends them with
-parameter matching semantics as well. These are covered more extensively later
-in this document.
+parameter matching semantics as well. See the bottom of this document for more
+details.
 
-Lazorse by default owns the `/` and `/schema/*` routes. The root route will
-respond with an object that maps all registered routes/URI templates to a
-route object. So an app with a single route like:
+Lazorse by default owns the `/` and routes. The `/` route will respond with an
+index that maps all registered URI templates to a route specification, including
+a description and examples if they are available. So an app with a single route
+like:
 
 ```coffee
 greetingLookup = english: "Hi", french: "Salut"
@@ -47,7 +48,7 @@ Will return a spec object like:
 
 All of the keys are optional, but chances are you want to include at least one
 HTTP method handler, or your route will be unreachable. Additionally, the
-shortname can be nice for giving client a consistent way to refer to the URI.
+shortname can be nice for giving clients an easy way to refer to the URI.
 
 ### Coercions
 
@@ -73,22 +74,23 @@ Of course you're probably wondering about those handler functions. Each handler
 function is called with `this` bound to a context containing the following keys:
 
  - `req` and `res`: request and response objects direct from connect.
- - `data` and `ok`: Callbacks that will set the data property for the rendering
-    layer. (Don't worry, that's next). The only difference is that `ok` does
+ - `data` and `ok`: Callbacks that will set `res.data` for the rendering layer.
+    (Don't worry, that's next). The only difference is that `ok` does
     _not_ handle errors, it only accepts a single argument and assumes that's
     what you want to return to the client. `data` on the other hand, will treat
-    the first argument as an error in typical node callback style.
+    the first argument as an error in the idiomatic node style.
  - `link`: Takes a route shortName and a context object and returns the result
     of expanding the corresponding URI template in that context.
 
-Although the examples have taken no parameters, handlers _do_ get one parameter:
-the request context. This means you can use fat-arrow handlers if necessary.
+Although the example handlers have taken no parameters, lazorse does pass them
+one parameter: the request context. This is meant to enable fat-arrow handlers
+in situations where that's more convenient.
 
 ### Rendering
 
 Lazorse includes no templating. Instead, rendering is handled as another
-middleware in the stack. The default rendering middleware supports (bare-bones)
-HTML and JSON. It inspects the `Accept` header to see what the client wants,
+middleware in the stack. The default rendering middleware supports JSON and
+(very ugly) HTML. It inspects the `Accept` header to see what the client wants,
 and falls back to JSON when it can't provide it. You can easily add or override
 the renderer for a new content type like so:
 
@@ -105,24 +107,62 @@ Obviously, your own renderers would do something actually useful. In addition to
 that serviced the request. This could be used to do something like look up a
 template or XML schema with `req.route.shortName`.
 
-### URI Template matching
+### Including Example Requests
 
-The matching semantics for URI templates are my addition to the RFC that
-specifies their expansion algorithm. My intention is to meet and maintain the
-constraint that expanding a template with the vars it returned when parsing a
-URL will return the same URL. In order to do this we need the following rules
-for what can and cannot match:
+Lazorse can load a JSON file defining example requests against your API, and
+attach that information to the routes themselves so that it will be included in
+the route index.
+
+Given the example greeting API listed above, the examples file would look
+something like this:
+
+```json
+{
+  "localGreeting": [
+    {
+      "method": "GET",
+      "path": "/greeting/english"
+    }
+  ]
+}
+```
+
+Additionally lazorse ships with a script `lzrs-gen-examples` that will read a
+file in this format, perform the requests, and then update the file with
+responses in-line, so that it ends up looking like this:
+
+```json
+{
+  "localGreeting": [
+    {
+      "method": "GET",
+      "path": "/greeting/english",
+      "response": {
+        "greeting": "Hi",
+        "language": "english"
+      }
+    }
+  ]
+}
+```
+
+To include this example data into your app, use the `@loadExamples` method,
+which takes an object or filename as it's argument and attaches each array of
+example requests to the corresponding route.
+
+### More info on URI Template matching
+
+The matching semantics for URI templates are an addition to the RFC that
+specifies their expansion algorithm. Unfortunately, the nature of the expansion
+algorithm makes round-trip expansion and parsing of URIs inconsistent unless the
+following rules are followed:
 
   * All parameters, excepting query string parameters, are required.
   * Query string parameters cannot do positional matching. E.g. ?one&two&three
 		will always fail. You must use named parameters in a query string.
   * Query string parameters with an explode modifier (e.g. {?list*}) currently
 		will parse differently than they expand. I strongly recommend not to use
-		the explode modifier for query string params
-
-### Schemas
-
-TODO - Determine if these are even useful.
+		the explode modifier for query string params.
 
 ## TODO
 
