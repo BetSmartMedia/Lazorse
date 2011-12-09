@@ -19,7 +19,7 @@
     "node": "~0.4.12"
   },
   "bin": {
-    "lzrs-gen-examples": "./lzrs-gen-examples"
+    "lzrs-gen-examples": "./bin/lzrs-gen-examples"
   },
   "dependencies": {
     "connect": "*",
