@@ -16,7 +16,7 @@
     "./README.md"
   ],
   "engines": {
-    "node": "~0.4.12"
+    "node": ">=0.4.0"
   },
   "bin": {
     "lzrs-gen-examples": "./bin/lzrs-gen-examples"
