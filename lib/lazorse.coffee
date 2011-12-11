@@ -14,6 +14,9 @@ class LazyApp
       init = {}
 
     app = @
+
+    @passErrors = false
+
     @renderer = contentTypeRenderer
 
     @helpers =
@@ -21,8 +24,9 @@ class LazyApp
         @res.statusCode = 200
         @res.data = data
         @next()
-      data: (err, data) -> return @next err if err?; @ok data
+      data: (err, data) -> @next err if err?; @ok data
       link: (name, ctx) -> app.routes[name].template.expand(ctx or @)
+      error: (name, args...) -> @next new app.errors[name](args...)
 
     @routes = {}
     @schemas = {}
@@ -38,7 +42,6 @@ class LazyApp
     indexPath = (init.indexPath? and init.indexPath) or '/'
     defaultRoutes = {}
     defaultRoutes[indexPath] =
-      shortName: 'routeIndex'
       description: "Index of all routes"
       GET: ->
         specs = []
@@ -51,10 +54,9 @@ class LazyApp
             prefix: spec.prefix
             methods: (k for k of spec when k in METHODS)
         specs.sort (a, b) ->
-          if a.prefix != b.prefix
-            return(if a.prefix < b.prefix then -1 else 1)
-          return 0 if a.shortName == b.shortName
-          return(if a.shortName < b.shortName then -1 else 1)
+          [a, b] = [a, b].map (i) -> i.prefix + i.shortName
+          return 0 if a == b
+          if a < b then -1 else 1
         @ok specs
 
     @route defaultRoutes
@@ -66,7 +68,7 @@ class LazyApp
     if not examples? then return
     if 'string' == typeof examples
       try
-        examples = JSON.parse readFileSync examples, 'utf8'
+        examples = JSON.parse readFileSync examples
       catch e
         console.warn "Failed to load examples from #{examples}"
     for shortName, exs of examples
@@ -75,7 +77,7 @@ class LazyApp
   route: (specs) ->
     for template, spec of specs
       if spec.shortName and @routes[spec.shortName]?
-        throw new Error "Duplicate path name #{spec.shortName}"
+        throw new Error "Duplicate path name '#{spec.shortName}'"
 
       @register template, spec
 
@@ -100,22 +102,6 @@ class LazyApp
       throw new Error "Duplicate coercion name: #{name}" if @coercions[name]?
       @coercions[name] = cb
 
-  coerceAll: (req, res, next) ->
-    ctx = @build_context req, res, next
-    varNames = (k for k in Object.keys req.vars when @coercions[k]?)
-    varNames.sort (a, b) -> req.url.indexOf(a) - req.url.indexOf(b)
-    i = 0
-    nextCoercion = =>
-      name = varNames[i++]
-      return next() unless name?
-      coercion = @coercions[name]
-      coercion.call ctx, req.vars[name], (e, newValue) ->
-        return next e if e?
-        #if e == 'drop' then delete req.vars[name] else 
-        req.vars[name] = newValue
-        nextCoercion()
-    nextCoercion()
-  
   # Stealing yet another idea from zappa
   include: (path, mod) ->
     if typeof path.include == 'function'
@@ -138,7 +124,7 @@ class LazyApp
 #
 # Because this is a delegation chain, you need to be careful not to mask out helper
 # names with variable names.
-  router: (req, res, next) ->
+  router: (req, res, next) =>
     # make sure req.vars is set, as coerceAll() expects it
     req.vars = {}
     try
@@ -157,12 +143,74 @@ class LazyApp
     catch err
       next err
 
+# Run any registered coercion callbackes against matched template parameters
+  coerceAll: (req, res, next) =>
+    ctx = @build_context req, res, next
+    varNames = (k for k in Object.keys req.vars when @coercions[k]?)
+    varNames.sort (a, b) -> req.url.indexOf(a) - req.url.indexOf(b)
+    i = 0
+    nextCoercion = =>
+      name = varNames[i++]
+      return next() unless name?
+      coercion = @coercions[name]
+      coercion.call ctx, req.vars[name], (e, newValue) ->
+        return next e if e?
+        #if e == 'drop' then delete req.vars[name] else 
+        req.vars[name] = newValue
+        nextCoercion()
+    nextCoercion()
+  
+
 # Call the route handler
-  dispatch: (req, res, next) ->
+  dispatch: (req, res, next) =>
     return next() unless req.route?
     ctx = @build_context req, res, next
     # the route handler should call next()
     req.route[req.method].call ctx, ctx
+
+# Catch any Lazorse specific errors and return an appropriate response
+  errorHandler: (err, req, res, next) =>
+    sendError = (code, errData) ->
+      res.statusCode = code
+      res.end JSON.stringify errData
+    switch err.constructor
+      when Redirect
+        res.setHeader 'Location', err.location
+        sendError err.code, err.message
+      when NotFound, InvalidParameter, NoResponseData
+        sendError err.code, error: err.message, more: err.more
+      when SyntaxError
+        sendError 400, error: "Malformed JSON"
+      else
+        if @passErrors
+          next err
+        else
+          res.statusCode = 500
+          if typeof err is 'string'
+            console.error "Generic Error:", err
+            sendError 500, error: err
+          else
+            console.error "Error:", err.stack
+            sendError 500, error: "Internal error"
+
+  errors:
+    NoResponseData: ->
+      @message = "Response data is undefined"
+      @code = 500
+      Error.captureStackTrace @
+
+    InvalidParameter: (type, thing) ->
+      @message = "Bad Request: invalid #{type} #{thing}"
+      @code = 422
+      Error.captureStackTrace @
+
+    NotFound: (type, value) ->
+      @code = 404
+      if value?
+        @message = "#{type} '#{value}' not found"
+      else
+        @message = "#{type} not found"
+      Error.captureStackTrace @, NotFound
 
 # Build a 'this' context for middleware handlers
 # that call functions (dispatch, coerceAll)
@@ -173,16 +221,24 @@ class LazyApp
     vars.__proto__ = ctx
     vars
 
-# A default handle function for Connect middleware
-  handle: (req, res, next) ->
-    @router req, res, (err) =>
-      return next err if err?
-      @coerceAll req, res, (err) =>
-        return next err if err?
-        @dispatch req, res, (err) =>
-          return next err if err?
-          @renderer req, res, next
 
+# Extend a connect server with the default middleware stack from this app
+  extend: (server) ->
+    for mw in [@router, @coerceAll, @dispatch, @renderer, @errorHandler]
+      server.use mw
+
+# Or act as a single connect middleware
+  handle: (req, res, goodbyeLazorse) ->
+    stack = [@router, @coerceAll, @dispatch, @renderer]
+    nextMiddleware = =>
+      mw = stack.shift()
+      return goodbyeLazorse() unless mw?
+      mw req, res, (err) =>
+        return @errorHandler err if err?
+        nextMiddleware()
+    nextMiddleware()
+
+# The renderer middleware
 contentTypeRenderer = (req, res, next) ->
   if not res.data and not req.route
     return next new NoResponseData
@@ -201,20 +257,14 @@ module.exports = lazy = (args...) ->
   server = connect.createServer()
   server.use connect.favicon()
   server.use connect.logger()
+  server.use connect.bodyParser()
   server.use app
   server.use connect.errorHandler()
   server.listen app.port or 3000
 
 lazy.app = (args...) -> new LazyApp args...
 
-lazy.NoResponseData = NoResponseData = ->
-  @message = "Response data is undefined"
-  @code = 500
-  Error.captureStackTrace @
-
-lazy.InvalidParameter = InvalidParameter = (type, thing) ->
-  @message = "Bad Request: invalid #{type} #{thing}"
-  @code = 400
-  Error.captureStackTrace @
-
+# Export the exception types
+for name, ctor of LazyApp.errors
+  lazy[name] = ctor
 # vim: set et:

@@ -1,28 +1,24 @@
-# LAZORSE!
+# Lazorse!
 
-What do lazers and horses have in common? They will both kill you without a second thought (or a first thought).
-
-Also, they share a few phonemes with "lazy" and "resource", which is what Lazorse is all about.
-
-## K, wtf is it?
-
-Lazorse is a connect middleware stack that routes requests, coerces parameters,
-dispatches to handlers, and renders a response. It borrows heavily from
-[other][zappa] [awesome][coffeemate] [web frameworks][express] but with a couple
-of twists designed to make writing machine-consumable ReSTful APIs a little
-easier.
+Lazorse is a connect middleware stack with a strong emphasis on extensibility
+that routes requests, coerces parameters, dispatches to handlers, and renders a 
+response. It borrows heavily from [other][zappa] [awesome][coffeemate] nodejs 
+[web frameworks][express] but with a couple of twists designed to make writing 
+machine-consumable ReSTful APIs a little easier. Because it's all "just 
+middleware", you can also pull out and re-arrange the various pieces to better 
+suit the needs of your application.
 
 ### Routing
 
-First and foremost of these is the route syntax: it's the same syntax as the 
-[draft spec][uri template rfc] for URI templates, but extends them with
-parameter matching semantics as well. See the bottom of this document for more
-details.
+The most unusual piece of lazorse is the route syntax: it's the same as the 
+[draft spec][uri template rfc] for URI templates, but layers parameter matching
+semantics on top. (There are more details and disclaimers at the bottom of this
+document).
 
-Lazorse by default owns the index (`/`) route. The index route responds to GET
-a mapping of all registered URI templates to their route specification, including
-a description and examples if they are available. So an app with a single route
-like:
+Lazorse by default owns the index (`/`) route. This route responds to GET with
+an array of all named routes with their URI template and other metadata, such 
+as a description and examples if they are available. So an app with a single 
+route like:
 
 ```coffee
 greetingLookup = english: "Hi", french: "Salut"
@@ -34,21 +30,22 @@ greetingLookup = english: "Hi", french: "Salut"
   POST: -> greetingLookup[@language] = @req.body; @ok()
 ```
 
-Will return a spec object like:
+Will return an array that looks like this:
 
 ```json
-{
-  "/{language}/greetings": {
+[
+  {
+    "template": "/{language}/greetings", 
     "description": "Retrieve or store per-language greetings",
     "shortName": "localGreeting",
     "methods": ["GET", "POST"]
   }
-}
+]
 ```
 
 All of the keys are optional, but chances are you want to include at least one
-HTTP method handler, or your route will be unreachable. Additionally, the
-shortname can be nice for giving clients an easy way to refer to the URI.
+HTTP method handler, or your route will be unreachable. Also, remember that a
+route without a ``shortName`` will *not* show up in the index.
 
 ### Coercions
 
@@ -97,9 +94,9 @@ the renderer for a new content type like so:
 ```coffee
 render = require('lazorse/render')
 render['application/vnd.wonka-ticket'] = (req, res, next) ->
-	ticket = res.data
-	res.write bufferOverflowThatTransportsClientToTheChocolateFactory()
-	res.end "pwnd"
+  ticket = res.data
+  res.write bufferOverflowThatTransportsClientToTheChocolateFactory()
+  res.end "pwnd"
 ```
 
 Obviously, your own renderers would do something actually useful. In addition to
@@ -107,7 +104,15 @@ Obviously, your own renderers would do something actually useful. In addition to
 that serviced the request. This could be used to do something like look up a
 template or XML schema with `req.route.shortName`.
 
-### Including Example Requests
+### Error handling
+
+Lazorse exports a few custom error constructors and includes an errorHandler
+middleware in it's stack that will recognize these errors and react
+appropriately. If the ``passErrors`` property of the app is set to true,
+Lazorse will pass unrecognized errors on to the next middleware in the stack,
+otherwise it will return a generic 500 response.
+
+## Including Example Requests
 
 Lazorse can load a JSON file defining example requests against your API, and
 attach that information to the routes themselves so that it will be included in
@@ -150,7 +155,7 @@ To include this example data into your app, use the `@loadExamples` method,
 which takes an object or filename as it's argument and attaches each array of
 example requests to the corresponding route.
 
-### More info on URI Template matching
+## More info on URI Template matching
 
 The matching semantics for URI templates are an addition to the RFC that
 specifies their expansion algorithm. Unfortunately, the nature of the expansion
@@ -159,16 +164,21 @@ following rules are followed:
 
   * All parameters, excepting query string parameters, are required.
   * Query string parameters cannot do positional matching. E.g. ?one&two&three
-		will always fail. You must use named parameters in a query string.
+    will always fail. You must use named parameters in a query string.
   * Query string parameters with an explode modifier (e.g. {?list*}) currently
-		will parse differently than they expand. I strongly recommend not to use
-		the explode modifier for query string params.
+    will parse differently than they expand. I strongly recommend 
+    not to use the explode modifier for query string params.
+
+## What's the deal with the name?
+
+While it *could* be viewed as a portmentaeu of Lazy and Resource, I prefer to
+think of it as horses with lasers.
 
 ## TODO
 
 * More tests, as always.
 * Factor different operators into different Expression specializations,
-	hopefully this will help clean up some of the logic in Expression::match
+  hopefully this will help clean up some of the logic in Expression::match
 
 ## License
 
