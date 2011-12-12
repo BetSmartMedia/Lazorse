@@ -29,9 +29,10 @@ writeHtml = (res, data) ->
   if Array.isArray(data) then htmlList res, data
   else if typeof data is 'object' then htmlDict res, data
   else if typeof data is 'string' then res.write data
+  else if typeof data is 'number' then res.write data.toString()
   else if typeof data is 'undefined' then res.write '&nbsp;'
   else
-    console.dir "Can't write this data as html"
+    console.log "Can't write this data as html"
     console.dir data
 
 htmlList = (res, ol) ->
