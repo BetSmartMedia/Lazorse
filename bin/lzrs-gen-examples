@@ -17,8 +17,7 @@ if argv[0] == '-h' or argv[0] == '--help'
 
 file = argv.shift() or './examples.json'
 host = argv.shift() or 'localhost'
-port = argv.shift() or 3000
-port = Number port
+port = Number(argv.shift() or 3000)
 
 allExamples = JSON.parse readFileSync file, 'utf8'
 
@@ -27,7 +26,8 @@ waiting = 0
 performRequest = (example) ->
   waiting += 1
   {method, path, body} = example
-  req = request {method, host, port, path, body}, (res) ->
+  headers = 'Content-Type': 'application/json'
+  req = request {method, host, port, path, headers}, (res) ->
     example.response = ''
     res.setEncoding 'utf8'
     res.on 'data', (d) -> example.response += d

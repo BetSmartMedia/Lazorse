@@ -53,6 +53,8 @@ Expression::match = (input, vars) ->
   named = {}
   ordered = []
   for part in matchable.split @op.sep
+    if part.match(/\//) and @op.allow isnt 'U+R'
+      return null
     [n, v] = part.split '='
     if not v?
       if inQS

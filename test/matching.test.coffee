@@ -40,7 +40,6 @@ suite.addBatch withTemplate '/{path}{?q1}'
 
   '/one':
     path: 'one'
-    q1: []
 
 suite.addBatch withTemplate '/{things*}'
   '/one,two,three':
@@ -49,4 +48,8 @@ suite.addBatch withTemplate '/{things*}'
 suite.addBatch withTemplate '/{?things}'
   '/?things=one,two,three':
     things: ['one', 'two', 'three']
+
+suite.addBatch withTemplate '/part/{leftovers}'
+  '/part/one/two/three': false
+
 suite.export(module)
