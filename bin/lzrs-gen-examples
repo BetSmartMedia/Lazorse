@@ -2,7 +2,7 @@
 usage = """
 Usage:
 
-bin/update_examples.coffee [filename='./examples.json'] [host=localhost] [port=3000]
+lzrs-gen-examples [filename='./examples.json'] [host=localhost] [port=3000]
 """
 
 
@@ -34,10 +34,11 @@ performRequest = (example) ->
     res.on 'end', ->
       example.response = JSON.parse example.response
       unless (waiting -= 1)
-        writeFileSync file, JSON.stringify allExamples, null, '  '
+        writeFileSync file, JSON.stringify allExamples, null, 2
 
+  body = JSON.stringify body if body?
   req.end body
   
 for shortName, examples of allExamples
   for example in examples
-    performRequest example
+    do (example) -> performRequest example
