@@ -7,6 +7,8 @@ parser = require 'uri-template'
 # Used for loading example request JSON files
 {readFileSync} = require 'fs'
 
+errors = require './errors'
+
 class LazyApp
   constructor: (init, builder) ->
     if 'function' == typeof init
@@ -16,19 +18,17 @@ class LazyApp
     app = @
 
     @passErrors = false
-
     @renderer = contentTypeRenderer
-
     @helpers =
       ok:   (data) ->
         @res.statusCode = 200
         @res.data = data
         @next()
-      data: (err, data) -> @next err if err?; @ok data
+      data: (err, data) -> return @next err if err?; @ok data
       link: (name, ctx) -> app.routes[name].template.expand(ctx or @)
-      error: (name, args...) -> @next new app.errors[name](args...)
+      error: (name, args...) -> @next new errors[name](args...)
 
-    @routes = {}
+    @routeIndex = {}
     @schemas = {}
     @coercions = {}
     @routeTable = {}
@@ -39,22 +39,20 @@ class LazyApp
     @_prefix = ''
 
     # Set up the default index route
-    indexPath = (init.indexPath? and init.indexPath) or '/'
+    indexPath = init.indexPath or '/'
     defaultRoutes = {}
     defaultRoutes[indexPath] =
       description: "Index of all routes"
       GET: ->
-        specs = []
-        for shortName, spec of app.routes
-          specs.push
-            template: String spec.template
-            shortName: shortName
-            description: spec.description
-            examples: spec.examples
-            prefix: spec.prefix
-            methods: (k for k of spec when k in METHODS)
+        specs = for shortName, route of app.routeIndex
+          {template, shortName, description, examples} = route
+          methods = (k for k of route when k in METHODS)
+          template = String template
+          spec = {template, shortName, description, methods}
+          spec.examples = examples if examples?
+          spec
         specs.sort (a, b) ->
-          [a, b] = [a, b].map (i) -> i.prefix + i.shortName
+          [a, b] = [a, b].map (s) -> s.template
           return 0 if a == b
           if a < b then -1 else 1
         @ok specs
@@ -72,19 +70,18 @@ class LazyApp
       catch e
         console.warn "Failed to load examples from #{examples}"
     for shortName, exs of examples
-      @routes[shortName]?.examples = exs
+      @routeIndex[shortName]?.examples = exs
 
   route: (specs) ->
     for template, spec of specs
-      if spec.shortName and @routes[spec.shortName]?
-        throw new Error "Duplicate path name '#{spec.shortName}'"
+      if spec.shortName and @routeIndex[spec.shortName]?
+        throw new Error "Duplicate short name '#{spec.shortName}'"
 
       @register template, spec
 
   register: (template, spec) ->
     spec.template = parser.parse @_prefix + template
-    spec.prefix = @_prefix
-    @routes[spec.shortName] = spec if spec.shortName
+    @routeIndex[spec.shortName] = spec if spec.shortName
     for method in METHODS when handler = spec[method]
       @routeTable[method].push spec
 
@@ -114,19 +111,8 @@ class LazyApp
     mod.include.call @
     @_prefix = restorePrefix
 
-# The handler is responsible for setting up the environment in which your 
-# request handlers will be called. The environment is made up of 3 objects in a 
-# delegation chain:
-# 
-#   1. App helpers, as registered with @helper
-#   2. Request context, contains `app`, `req`, `res`, and `next`
-#   3. URI Template variables
-#
-# Because this is a delegation chain, you need to be careful not to mask out helper
-# names with variable names.
+# Finds a matching route, then attaches it and the matched URI vars to the request
   router: (req, res, next) =>
-    # make sure req.vars is set, as coerceAll() expects it
-    req.vars = {}
     try
       i = 0
       routes = @routeTable[req.method]
@@ -145,8 +131,10 @@ class LazyApp
 
 # Run any registered coercion callbackes against matched template parameters
   coerceAll: (req, res, next) =>
-    ctx = @build_context req, res, next
+    return next() unless req.vars
+    ctx = @buildContext req, res, next
     varNames = (k for k in Object.keys req.vars when @coercions[k]?)
+    return next() unless varNames.length
     varNames.sort (a, b) -> req.url.indexOf(a) - req.url.indexOf(b)
     i = 0
     nextCoercion = =>
@@ -155,16 +143,16 @@ class LazyApp
       coercion = @coercions[name]
       coercion.call ctx, req.vars[name], (e, newValue) ->
         return next e if e?
-        #if e == 'drop' then delete req.vars[name] else 
+        #if e == 'drop' then delete req.vars[name] else
         req.vars[name] = newValue
         nextCoercion()
     nextCoercion()
-  
+
 
 # Call the route handler
   dispatch: (req, res, next) =>
     return next() unless req.route?
-    ctx = @build_context req, res, next
+    ctx = @buildContext req, res, next
     # the route handler should call next()
     req.route[req.method].call ctx, ctx
 
@@ -174,10 +162,10 @@ class LazyApp
       res.statusCode = code
       res.end JSON.stringify errData
     switch err.constructor
-      when Redirect
+      when errors.Redirect
         res.setHeader 'Location', err.location
         sendError err.code, err.message
-      when NotFound, InvalidParameter, NoResponseData
+      when errors.NotFound, errors.InvalidParameter, errors.NoResponseData
         sendError err.code, error: err.message, more: err.more
       when SyntaxError
         sendError 400, error: "Malformed JSON"
@@ -193,32 +181,27 @@ class LazyApp
             console.error "Error:", err.stack
             sendError 500, error: "Internal error"
 
-  errors:
-    NoResponseData: ->
-      @message = "Response data is undefined"
-      @code = 500
-      Error.captureStackTrace @
-
-    InvalidParameter: (type, thing) ->
-      @message = "Bad Request: invalid #{type} #{thing}"
-      @code = 422
-      Error.captureStackTrace @
-
-    NotFound: (type, value) ->
-      @code = 404
-      if value?
-        @message = "#{type} '#{value}' not found"
-      else
-        @message = "#{type} not found"
-      Error.captureStackTrace @, NotFound
-
-# Build a 'this' context for middleware handlers
-# that call functions (dispatch, coerceAll)
-  build_context: (req, res, next) ->
-    ctx = app: @, req: req, res: res, next: next
-    ctx.__proto__ = @helpers
+# Build a 'this' context for middleware handlers (dispatch and coerceAll)
+# The context is made up of 2 objects in a delegation chain:
+#
+#   1. An object containing URI Template variables, which delegates to:
+#   2. Request context, contains:
+#      - `app`: The lazorse app
+#      - `req`: The request object from node (via connect)
+#      - `res`: The response object from node (via connect)
+#      - `errors`: An object containing Error constructors
+#      - `next`: The next callback from connect
+#
+# Because this is a delegation chain, you need to be careful not to mask out helper
+# names with variable names.
+  buildContext: (req, res, next) ->
+    ctx = {req, res, next}
+    ctx.app = @
     vars = req.vars
     vars.__proto__ = ctx
+    ctx.errors = errors
+    for n, h of @helpers
+      ctx[n] = if 'function' == typeof h then h.bind vars else h
     vars
 
 
@@ -240,15 +223,15 @@ class LazyApp
 
 # The renderer middleware
 contentTypeRenderer = (req, res, next) ->
-  if not res.data and not req.route
-    return next new NoResponseData
-  if not req.route
-    return next()
+  return next new errors.NotFound if not req.route
+  return next new errors.NoResponseData if not res.data
   render = require './render'
   if req.headers.accept and [types, _] = req.headers.accept.split ';'
     for type in types.split ','
       if render[type]?
+        res.setHeader 'Content-Type', type
         return render[type] req, res, next
+  res.setHeader 'Content-Type', 'application/json'
   return render['application/json'] req, res, next
 
 module.exports = lazy = (args...) ->
@@ -265,6 +248,9 @@ module.exports = lazy = (args...) ->
 lazy.app = (args...) -> new LazyApp args...
 
 # Export the exception types
-for name, ctor of LazyApp.errors
-  lazy[name] = ctor
+lazy.errors = errors
+
+# Export the renderers
+lazy.render = require './render'
+
 # vim: set et:
