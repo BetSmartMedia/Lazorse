@@ -20,12 +20,12 @@ class LazyApp
     @passErrors = false
     @renderer = contentTypeRenderer
     @helpers =
-      ok:   (data) ->
+      ok: (data) ->
         @res.statusCode = 200
         @res.data = data
         @next()
       data: (err, data) -> return @next err if err?; @ok data
-      link: (name, ctx) -> app.routes[name].template.expand(ctx or @)
+      link: (name, ctx) -> app.routeIndex[name].template.expand(ctx or @)
       error: (name, args...) -> @next new errors[name](args...)
 
     @routeIndex = {}
