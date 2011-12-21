@@ -123,7 +123,7 @@ class LazyApp
       nextHandler = (err) ->
         return next err if err? and err != 'route'
         r = routes[i++]
-        return next() unless r?
+        return next(new errors.NotFound 'route', req.url) unless r?
         vars = r.template.match req.url
         return nextHandler() unless vars
         req.route = r
@@ -221,7 +221,7 @@ class LazyApp
       mw = stack.shift()
       return goodbyeLazorse() unless mw?
       mw req, res, (err) =>
-        return @errorHandler err if err?
+        return @errorHandler err, req, res, goodbyeLazorse if err?
         nextMiddleware()
     nextMiddleware()
 
