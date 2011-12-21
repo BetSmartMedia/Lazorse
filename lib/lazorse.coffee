@@ -26,7 +26,11 @@ class LazyApp
         @next()
       data: (err, data) -> return @next err if err?; @ok data
       link: (name, ctx) -> app.routeIndex[name].template.expand(ctx or @)
-      error: (name, args...) -> @next new errors[name](args...)
+      error: (name, args...) ->
+        if 'function' == typeof name
+          @next new name args...
+        else
+          @next new errors[name](args...)
 
     @routeIndex = {}
     @schemas = {}
