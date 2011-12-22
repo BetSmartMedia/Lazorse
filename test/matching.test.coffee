@@ -6,21 +6,17 @@ assert = require 'assert'
 
 withTemplate = (tpl_string, tests) ->
   tpl = parser.parse tpl_string
-  ctx = {}
-  ctx["Checking template #{tpl_string}"] = subctx = {}
-  for url, result of tests
-    msg = result.msg && " (#{result.msg})" || ""
-    do (url, result) ->
-      subctx["against #{url}#{msg}"] = ->
+  describe "With template #{tpl_string}", ->
+    for url, result of tests
+      it "check input #{url}", ->
         vars = tpl.match(url)
         assert.deepEqual vars, result
         if vars
           assert.equal tpl.expand(vars), url
-  return ctx
 
 suite = vows.describe 'URI Template Matching'
 
-suite.addBatch withTemplate '/{first}/{second}',
+withTemplate '/{first}/{second}',
   '/one/two':
     first: 'one'
     second: 'two'
@@ -31,7 +27,7 @@ suite.addBatch withTemplate '/{first}/{second}',
     first: '0'
     second: '0'
 
-suite.addBatch withTemplate '/{path}{?q1}'
+withTemplate '/{path}{?q1}',
   '/one?neat': false
 
   '/one?q1=named':
@@ -41,15 +37,16 @@ suite.addBatch withTemplate '/{path}{?q1}'
   '/one':
     path: 'one'
 
-suite.addBatch withTemplate '/{things*}'
+withTemplate '/{things*}',
   '/one,two,three':
     things: ['one', 'two', 'three']
 
-suite.addBatch withTemplate '/{?things}'
+withTemplate '/{?things}'
   '/?things=one,two,three':
     things: ['one', 'two', 'three']
+  '/?things=one':
+    things: ['one']
 
-suite.addBatch withTemplate '/part/{leftovers}'
+withTemplate '/part/{leftovers}'
   '/part/one/two/three': false
 
-suite.export(module)

@@ -25,6 +25,9 @@
     "uri-template": "*"
   },
   "devDependencies": {
-    "vows": "~0.5.13"
-  }
+    "mocha": "~0.7.0"
+  },
+	"scripts": {
+		"test": "mocha"
+	}
 }

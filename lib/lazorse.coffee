@@ -177,13 +177,11 @@ class LazyApp
         if @passErrors
           next err
         else
-          res.statusCode = 500
+          statusCode = err.code or 500
           if typeof err is 'string'
-            console.error "Generic Error:", err
-            sendError 500, error: err
+            sendError statusCode, error: err
           else
-            console.error "Error:", err.stack
-            sendError 500, error: "Internal error"
+            sendError statusCode, error: "Internal error"
 
 # Build a 'this' context for middleware handlers (dispatch and coerceAll)
 # The context is made up of 2 objects in a delegation chain:
