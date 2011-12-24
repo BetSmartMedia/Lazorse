@@ -16,5 +16,3 @@ lazorse ->
     unless greetingLookup[lang]?
       return next new lazorse.InvalidParameter 'language', lang
     next null, lang
-
-  @loadExamples __dirname + '/language_examples.json'

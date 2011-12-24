@@ -34,9 +34,8 @@ describe "A basic app", ->
   after -> server.close()
 
   it "has an index with one resource", (done) ->
-    client.GET '/', (res, rawBody) ->
+    client.GET '/', (res, resources) ->
       assert.equal res.statusCode, 200
-      resources = JSON.parse rawBody
       assert.equal resources.length, 1
       assert.equal resources[0].shortName, 'discoverableResource'
       done()

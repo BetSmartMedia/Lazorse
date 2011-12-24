@@ -53,8 +53,7 @@ describe "With URL parameters", ->
       for path, vars of exp
         do (path, vars) ->
           it "GET #{path}", (done) ->
-            client.GET path, (res, rawBody) ->
+            client.GET path, (res, data) ->
               assert.equal res.statusCode, 200
-              data = JSON.parse(rawBody)
               assert.deepEqual vars, data
               done()

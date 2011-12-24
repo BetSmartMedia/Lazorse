@@ -15,7 +15,7 @@ for method in exports.METHODS
       req = http.request req, (res) ->
         res.on 'data', (chnk) -> rawBody += chnk
         res.on 'end', ->
-          cb res, rawBody
+          cb res, JSON.parse(rawBody or null)
       if body = opts.body
         if 'string' != typeof body
           body = JSON.stringify body

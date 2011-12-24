@@ -2,35 +2,46 @@ client = require('./client')
 server = require('connect').createServer()
 assert = require('assert')
 
-errors = require '../lib/errors'
-
-errors["teapot"] = TeapotError = ->
+TeapotError = ->
   @code = 418
-  Error.captureStackTrace @, errors.TeapotError
+  @message = "I'm a teapot"
+  Error.captureStackTrace @, TeapotError
+
+CoffeepotError = ->
+  @code = 418
+  @message = "I'm a coffeepot"
+  Error.captureStackTrace @, TeapotError
 
 server.use require('../lib/lazorse').app ->
-  @route '/usingString':
-    GET: -> @error "teapot"
+  @route '/byNameUnregistered':
+    GET: -> @error "TeapotError"
+
+  @route '/byNameRegistered':
+    GET: -> @error "TeapotError"
 
   @route '/usingConstructor':
     GET: -> @error TeapotError
 
-
-describe "A basic app", ->
-  port = null
+describe "An app that uses custom errors", ->
   before (start) ->
     server.listen 0, 'localhost', ->
       client.usePort server.address().port
       start()
 
-  after -> server.close(); delete errors['TeapotError']
+  after -> server.close()
 
-  it 'can find errors by name', (done) ->
-    client.GET '/usingString', (res, rawBody) ->
-      assert.equal res.statusCode, 418
+  it "can't find errors by name when they aren't registered", (done) ->
+    client.GET '/byNameUnregistered', (res) ->
+      assert.equal res.statusCode, 500
       done()
 
-  it 'treats functions as constructors', (done) ->
-    client.GET '/usingConstructor', (res, rawBody) ->
+  it "can find errors by name when they are registered", (done) ->
+    client.GET '/byNameRegistered', (res) ->
+      assert.equal res.statusCode, 500
+      done()
+
+
+  it 'treats functions as constructors regardless of registration', (done) ->
+    client.GET '/usingConstructor', (res) ->
       assert.equal res.statusCode, 418
       done()
