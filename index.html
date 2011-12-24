@@ -51,10 +51,21 @@ response. It borrows heavily from <a class="reference external" href="zappa">oth
 machine-consumable ReSTful APIs a little easier. Because it&#8217;s all &#8220;just
 middleware&#8221;, you can also pull out and re-arrange the various pieces to better
 suit the needs of your application.</p>
+<p>Be sure to checkout the <a class="reference external" href="http://betsmartmedia.github.com/Lazorse#walkthrough">walkthrough</a> and <a class="reference external" href="http://betsmartmedia.github.com/Lazorse#api-documentation">API docs</a>!</p>
+<div class="section" id="what-s-the-deal-with-the-name">
+<h2>What&#8217;s the deal with the name?<a class="headerlink" href="#what-s-the-deal-with-the-name" title="Permalink to this headline">¶</a></h2>
+<p>While it <em>could</em> be viewed as a portmentaeu of Lazy and Resource, I prefer to
+think of it as horses with lasers.</p>
+<p>## License</p>
+<p>MIT</p>
+</div>
+</div>
+<div class="section" id="id1">
+<h1>Walkthrough<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h1>
 <div class="section" id="routing">
 <h2>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h2>
 <p>The most unusual piece of lazorse is the route syntax: it&#8217;s the same as the
-[draft spec][uri template rfc] for URI templates, but layers parameter matching
+<a class="reference external" href="uritemplaterfc">draft spec</a> for URI templates, but adds parameter matching
 semantics on top. (There are more details and disclaimers at the bottom of this
 document).</p>
 <p>Lazorse creates a default index (<tt class="docutils literal"><span class="pre">/</span></tt>) route. This route responds to GET with
@@ -200,13 +211,6 @@ will parse differently than they expand. I strongly recommend
 not to use the explode modifier for query string params.</li>
 </ul>
 </div></blockquote>
-</div>
-<div class="section" id="what-s-the-deal-with-the-name">
-<h2>What&#8217;s the deal with the name?<a class="headerlink" href="#what-s-the-deal-with-the-name" title="Permalink to this headline">¶</a></h2>
-<p>While it <em>could</em> be viewed as a portmentaeu of Lazy and Resource, I prefer to
-think of it as horses with lasers.</p>
-<p>## License</p>
-<p>MIT</p>
 </div>
 </div>
 <div class="section" id="api-documentation">
@@ -407,6 +411,10 @@ names with variable names.</p>
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Lazorse!</a><ul>
+<li><a class="reference internal" href="#what-s-the-deal-with-the-name">What&#8217;s the deal with the name?</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id1">Walkthrough</a><ul>
 <li><a class="reference internal" href="#routing">Routing</a></li>
 <li><a class="reference internal" href="#coercions">Coercions</a></li>
 <li><a class="reference internal" href="#handlers-and-contexts">Handlers and contexts</a></li>
@@ -414,7 +422,6 @@ names with variable names.</p>
 <li><a class="reference internal" href="#error-handling">Error handling</a></li>
 <li><a class="reference internal" href="#including-example-requests">Including Example Requests</a></li>
 <li><a class="reference internal" href="#more-info-on-uri-template-matching">More info on URI Template matching</a></li>
-<li><a class="reference internal" href="#what-s-the-deal-with-the-name">What&#8217;s the deal with the name?</a></li>
 </ul>
 </li>
 <li><a class="reference internal" href="#api-documentation">API documentation</a></li>
