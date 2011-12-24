@@ -3,6 +3,7 @@
   "name": "lazorse",
   "description": "The lazy programmers ReST service framework",
   "version": "0.3.0",
+  "homepage": "http://betsmartmedia.github.com/Lazorse",
   "repository": {
     "type": "git",
     "url": "git://github.com/BetSmartMedia/Lazorse.git"
@@ -10,15 +11,11 @@
   "main": "./lib/lazorse",
   "files": [
     "./lib",
-    "./bin",
     "./examples",
     "./README.md"
   ],
   "engines": {
     "node": ">=0.4.0"
-  },
-  "bin": {
-    "lzrs-gen-examples": "./bin/lzrs-gen-examples"
   },
   "dependencies": {
     "connect": "*",
