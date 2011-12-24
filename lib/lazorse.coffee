@@ -3,6 +3,7 @@
 METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']
 
 require './uri-template-matchpatch'
+errors = require './errors'
 parser = require 'uri-template'
 # Used for loading example request JSON files
 {readFileSync} = require 'fs'
@@ -25,9 +26,6 @@ module.exports = exports = ->
 # Export a function to allow creating apps without starting a server
 exports.app = -> new LazyApp arguments...
 
-# Re-export the exception types and renderer registry for extension
-exports.errors = errors = 
-
 ###
 The main application class, contains and manages five connect middleware:
   
@@ -40,12 +38,13 @@ The main application class, contains and manages five connect middleware:
 Each of these middleware can be ``use``d individually, or the app itself can act
 as a single connect middleware.
 
-For modifying the configuration of the first two middleware, the app object has
-the functions ``@route`` and ``@coerce`` that allow you to register
-new callbacks at each of these stages. Additionally, it maintains a set of hl
+For modifying the configuration of the middleware, the app object exposes the
+functions ``@route``, ``@coerce``, and ``@error`` that allow you to register
+new callbacks at each of these stages.
 
-template, in the case of ``@route``) and the values the object or function to be
-registered.
+The renderer is extensible by assigning to ``@renderer[<content-type>]``,
+Lazorse doesn't include any concept of a "view", because it's trivial to
+implement a middleware for any number of templating systems.
 ###
 class LazyApp
   constructor: (builder) ->
@@ -55,7 +54,8 @@ class LazyApp
     @port = 3000
     @renderer[type] = func for type, func of require './render'
     @errors = {}
-    @errors[name] = err for name, err of require './errors'
+    @errors[name] = err for name, err of errors.types
+    @errorHandler[name] = handler for name, handler of errors.handlers 
     @passErrors = false
     @helpers =
       ok: (data) ->
@@ -67,8 +67,10 @@ class LazyApp
       error: (name, args...) ->
         if 'function' == typeof name
           @next new name args...
+        else if @app.errors[name]?
+          @next new @app.errors[name](args...)
         else
-          @next new errors[name](args...)
+          @next name
 
     # Internal state
     @routeIndex = {}
@@ -78,40 +80,45 @@ class LazyApp
 
     @_prefix = ''
 
-    # Set up the default index route
-    indexPath = init.indexPath or '/'
-    defaultRoutes = {}
-    defaultRoutes[indexPath] =
-      description: "Index of all routes"
-      GET: ->
-        specs = for shortName, route of app.routeIndex
-          {template, shortName, description} = route
-          methods = (k for k of route when k in METHODS)
-          template = String template
-          spec = {shortName, description, methods, template}
-          spec.examples = "/examples/#{shortName}" if route.examples
-          spec
-        specs.sort (a, b) ->
-          [a, b] = (s.template for s in [a, b])
-          return 0 if a == b
-          if a < b then -1 else 1
-        @ok specs
+    # Call the builder before installing default routes so it can override
+    # the index and examples path.
+    builder.call @ if 'function' == typeof builder
 
-    defaultRoutes['/examples/{shortName}'] =
-      description: "Get example requests for a route"
-      GET: ->
-        unless (route = app.routeIndex[@shortName]) and route.examples
-          return @error errors.NotFound, 'examples', @shortName
-        needsResponse = []
-        examples = for example in route.examples
-          ex = method: example.method, path: @link @shortName, example.vars
-          ex.body = example.body if example.body?
-          ex
-        @ok examples
+    indexPath = @indexPath ? '/'
+    examplePrefix = @examplePrefix ? '/examples'
+
+    defaultRoutes = {}
+    if indexPath
+      defaultRoutes['/'] =
+        description: "Index of all routes"
+        GET: ->
+          specs = for shortName, route of app.routeIndex
+            {template, shortName, description} = route
+            methods = (k for k of route when k in METHODS)
+            template = String template
+            spec = {shortName, description, methods, template}
+            spec.examples = "/examples/#{shortName}" if route.examples
+            spec
+          specs.sort (a, b) ->
+            [a, b] = (s.template for s in [a, b])
+            return 0 if a == b
+            if a < b then -1 else 1
+          @ok specs
+
+    if examplePrefix
+      defaultRoutes[examplePrefix+'/{shortName}'] =
+        description: "Get example requests for a route"
+        GET: ->
+          unless (route = app.routeIndex[@shortName]) and route.examples
+            return @error errors.NotFound, 'examples', @shortName
+          needsResponse = []
+          examples = for example in route.examples
+            ex = method: example.method, path: @link @shortName, example.vars
+            ex.body = example.body if example.body?
+            ex
+          @ok examples
 
     @route defaultRoutes
-
-    builder.call @ if 'function' == typeof builder
 
   ###
   Register one or more routes. The ``specs`` object should map URI templates to
@@ -129,9 +136,9 @@ class LazyApp
       if spec.shortName and @routeIndex[spec.shortName]?
         throw new Error "Duplicate short name '#{spec.shortName}'"
 
-      @register template, spec
+      @_register template, spec
 
-  register: (template, spec) ->
+  _register: (template, spec) ->
     spec.template = parser.parse @_prefix + template
     @routeIndex[spec.shortName] = spec if spec.shortName
     for method in METHODS when handler = spec[method]
@@ -142,9 +149,7 @@ class LazyApp
   object that maps helper names to callback functions.
   
   The helpers will be made available in the context used be coercions and
-  request handlers (see ``buildContext``). So if you register a helper named
-  'fryEgg' it will be available as ``@fryEgg``.
-  ###
+  request handlers (see ``buildContext``). So if you register a helper named 'fryEgg' it will be available as ``@fryEgg``.  ###
   helper: (helpers) ->
     for name, helper of helpers
       @helpers[name] = helper
@@ -159,9 +164,20 @@ class LazyApp
   ###
   coerce: (coercions) ->
     for name, cb of coercions
-      throw new Error "Duplicate coercion name: #{name}" if @coercions[name]?
-      @coercions[name] = cb
+      throw new Error "Duplicate coercion name: #{name}" if @coercions[name]?  @coercions[name] = cb
 
+  ###
+  Register an error type with the app. The callback wlll be called by
+  ``@errorHandler`` when an error of this type is encountered.
+  
+  Additionally, errors of this type will be available to the @error helper in
+  handler/coercion callback by it's stringified name.
+  ###
+  error: (errType, cb) ->
+    errName = errType.name
+    @errors[errName] = errType
+    @errorHandler[errName] = cb
+  
   # Stealing yet another idea from zappa
   include: (path, mod) ->
     if typeof path.include == 'function'
@@ -183,10 +199,10 @@ class LazyApp
     try
       i = 0
       routes = @routeTable[req.method]
-      nextHandler = (err) ->
+      nextHandler = (err) =>
         return next err if err? and err != 'route'
         r = routes[i++]
-        return next(new errors.NotFound 'route', req.url) unless r?
+        return next(new @errors.NotFound 'route', req.url) unless r?
         vars = r.template.match req.url
         return nextHandler() unless vars
         req.route = r
@@ -245,8 +261,8 @@ class LazyApp
   This function is bound to the app and can be used as a separate middleware.
   ###
   renderer: (req, res, next) =>
-    return next new errors.NotFound if not req.route
-    return next new errors.NoResponseData if not res.data
+    return next new @errors.NotFound if not req.route
+    return next new @errors.NoResponseData if not res.data
     if req.headers.accept and [types, _] = req.headers.accept.split ';'
       for type in types.split ','
         if @renderer[type]?
@@ -264,26 +280,19 @@ class LazyApp
   This function is bound to the app and can be used as a separate middleware.
   ###
   errorHandler: (err, req, res, next) =>
-    sendError = (code, errData) ->
-      res.statusCode = code
-      res.end JSON.stringify errData
-    switch err.constructor
-      when errors.Redirect
-        res.setHeader 'Location', err.location
-        sendError err.code, err.message
-      when errors.NotFound, errors.InvalidParameter, errors.NoResponseData
-        sendError err.code, error: err.message, more: err.more
-      when SyntaxError
-        sendError 400, error: "Malformed JSON"
-      else
-        if @passErrors
-          next err
-        else
-          statusCode = err.code or 500
-          if typeof err is 'string'
-            sendError statusCode, error: err
-          else
-            sendError statusCode, error: "Internal error"
+    errName = err.constructor.name
+    if @errorHandler[errName]?
+      @errorHandler[errName](err, req, res, next)
+    else if @passErrors
+      next err, req, res, next
+    else
+      res.statusCode = err.code or 500
+      message = 'string' == typeof err and err or err.message or "Internal error"
+      res.data = error: message
+      # @renderer will re-error if req.route isn't set (e.g. no route matched)
+      req.route ?= true
+      # Step back up to renderer
+      @renderer req, res, next
 
   ###
   Used internally to build the context that coercions, request handlers, and

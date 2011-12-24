@@ -1,18 +1,25 @@
-exports.Redirect = (@location, @code=301, @message) ->
+exports.types = {}
+exports.types.Redirect = (@location, @code=301, @message) ->
   @message ?= "Redirecting to #{@location}"
-  Error.captureStackTrace @, exports.Redirect
+  Error.captureStackTrace @, exports.types.Redirect
 
-exports.NoResponseData = ->
+exports.handlers =
+  Redirect: (err, req, res, next) ->
+    res.statusCode = err.code
+    res.setHeader 'Location', err.location
+    res.end err.message
+
+exports.types.NoResponseData = ->
   @message = "Response data is undefined"
   @code = 500
-  Error.captureStackTrace @, exports.NoResponseData
+  Error.captureStackTrace @, exports.types.NoResponseData
 
-exports.InvalidParameter = (type, thing) ->
+exports.types.InvalidParameter = (type, thing) ->
   @message = "Bad Request: invalid #{type} #{thing}"
   @code = 422
-  Error.captureStackTrace @, exports.InvalidParameter
+  Error.captureStackTrace @, exports.types.InvalidParameter
 
-exports.NotFound = (type, value) ->
+exports.types.NotFound = (type, value) ->
   @code = 404
   if type? and value?
     @message = "#{type} '#{value}' not found"
@@ -20,4 +27,4 @@ exports.NotFound = (type, value) ->
     @message = "#{type} not found"
   else
     @message = "Not found"
-  Error.captureStackTrace @, exports.NotFound
+  Error.captureStackTrace @, exports.types.NotFound
