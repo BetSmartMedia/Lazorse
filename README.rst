@@ -9,7 +9,7 @@ machine-consumable ReSTful APIs a little easier. Because it's all "just
 middleware", you can also pull out and re-arrange the various pieces to better 
 suit the needs of your application.
 
-Be sure to checkout the walkthrough_ and `API docs`_!
+Be sure to check out the walkthrough_ and `API docs`_!
 
 What's the deal with the name?
 ------------------------------
@@ -17,7 +17,8 @@ What's the deal with the name?
 While it *could* be viewed as a portmentaeu of Lazy and Resource, I prefer to
 think of it as horses with lasers.
 
-## License
+License
+-------
 
 MIT
 
