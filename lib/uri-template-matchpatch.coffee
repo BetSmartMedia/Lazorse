@@ -58,21 +58,15 @@ Expression::match = (input, vars) ->
     [n, v] = part.split '='
     if not v?
       if inQS
-        return null
+        named[n] = true
       else
         ordered.push unescape n
-    else if named[n]?
-      named[n].push unescape v
     else
-      named[n] = [unescape v]
+      named[n] = unescape v
   
   for p in @params
     if (v = named[p.name])?
-      if inQS
-        flat = []
-        for vv in v
-          flat.push.apply(flat, vv.split ',')
-        v = flat
+      #if inQS and v.match ',' then v = v.split ','
     else
       if p.explode
         if ordered.length then v = ordered; ordered = null
