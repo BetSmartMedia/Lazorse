@@ -1,12 +1,14 @@
 client = require('./client')
 server = require('connect').createServer()
+assert = require 'assert'
 
+# Test server
 server.use require('../lib/lazorse').app ->
   for method in client.METHODS
     route = {}
-    uri = "/#{method}able"
+    uri = "/#{method}me"
     route[uri] = {}
-    route[uri][method] = -> @ok "#{method}-ed"
+    route[uri][method] = -> @ok "#{method}"
     @route route
 
   @route '/indexed':
@@ -22,10 +24,8 @@ server.use require('../lib/lazorse').app ->
   @route '/422':
     GET: -> @error 'InvalidParameter', 'bad param'
 
-assert = require 'assert'
-
+# Tests
 describe "A basic app", ->
-  port = null
   before (start) ->
     server.listen 0, 'localhost', ->
       client.usePort server.address().port
@@ -47,7 +47,6 @@ describe "A basic app", ->
       assert.equal res.statusCode, 404
       done()
    
-
   for errcode in [404, 422, 500]
     do (errcode) ->
       it "can return #{errcode}", (done) ->
@@ -58,7 +57,7 @@ describe "A basic app", ->
   for method in client.METHODS
     do (method) ->
       it "can handle the #{method} method", (done) ->
-        client[method] "/#{method}able", (res) ->
+        client[method] "/#{method}me", (res) ->
           assert.equal res.statusCode, 200
           done()
 
