@@ -2,7 +2,7 @@
   "author": "Stephen Sugden <stephen@betsmartmedia.com> (www.betsmartmedia.com)",
   "name": "lazorse",
   "description": "The lazy programmers ReST service framework",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "repository": {
     "type": "git",
     "url": "git://github.com/BetSmartMedia/Lazorse.git"
@@ -27,7 +27,7 @@
   "devDependencies": {
     "mocha": "~0.7.0"
   },
-	"scripts": {
-		"test": "mocha"
-	}
+  "scripts": {
+    "test": "mocha"
+  }
 }
