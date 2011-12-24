@@ -8,6 +8,10 @@ lazorse ->
     shortName: 'localGreeting'
     GET:  -> @ok greeting: greetingLookup[@language], language: @language
     POST: -> greetingLookup[@language] = @req.body; @ok()
+    examples: [
+      {method: 'GET', vars: {language: 'english'}}
+      {method: 'POST', vars: {language: 'english'}, body: "howdy"}
+    ]
 
   # Define a coercion that restricts input languages to the
   # ones we have pre-defined

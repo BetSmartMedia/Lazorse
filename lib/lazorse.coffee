@@ -9,11 +9,12 @@ parser = require 'uri-template'
 {readFileSync} = require 'fs'
 
 ###
-The function exported by the module creates a ``LazyApp`` instance with it's
-arguments and a default connect server, then listens on app.port (3000 by default)
+The main export is a function that constructs a ``LazyApp`` instance and
+starts it listening on the port defined by the apps ``port`` property (default
+is 3000)
 ###
-module.exports = exports = ->
-  app = new LazyApp arguments...
+module.exports = exports = (builder) ->
+  app = new LazyApp builder
   connect = require 'connect'
   server = connect.createServer()
   server.use connect.favicon()
@@ -23,11 +24,14 @@ module.exports = exports = ->
   server.use connect.errorHandler()
   server.listen app.port
 
-# Export a function to allow creating apps without starting a server
-exports.app = -> new LazyApp arguments...
+###
+The module also exports a function that constructs an app without starting a
+server
+###
+exports.app = (builder) -> new LazyApp builder
 
 ###
-The main application class, contains and manages five connect middleware:
+The main application class, groups together five connect middleware:
   
   - ``@router``: Finds the handler function for a request.
   - ``@coerceAll``: Validates/translates incoming URI parameters into objects.
@@ -35,7 +39,7 @@ The main application class, contains and manages five connect middleware:
   - ``@renderer``: Writes data back to the client.
   - ``@errorHandler``: Handles known error types.
 
-Each of these middleware can be ``use``d individually, or the app itself can act
+Each of these middleware can be used individually, or the app itself can act
 as a single connect middleware.
 
 For modifying the configuration of the middleware, the app object exposes the
@@ -47,8 +51,15 @@ Lazorse doesn't include any concept of a "view", because it's trivial to
 implement a middleware for any number of templating systems.
 ###
 class LazyApp
+  ###
+  The constructor takes a `builder` function as it's sole argument. This
+  function will be called in the context of the app object `before` the default
+  index and examples routes are created. The builder can change the location of
+  these routes by setting ``@indexPath`` and ``@examplePath``, or disable them
+  by setting the path to ``false``.
+  ###
   constructor: (builder) ->
-    app = @ # Needed by some of the callback defined here
+    app = @ # Needed by some of the callbacks defined here
 
     # Defaults
     @port = 3000
@@ -85,7 +96,7 @@ class LazyApp
     builder.call @ if 'function' == typeof builder
 
     indexPath = @indexPath ? '/'
-    examplePrefix = @examplePrefix ? '/examples'
+    examplePath = @examplePath ? '/examples'
 
     defaultRoutes = {}
     if indexPath
@@ -105,8 +116,8 @@ class LazyApp
             if a < b then -1 else 1
           @ok specs
 
-    if examplePrefix
-      defaultRoutes[examplePrefix+'/{shortName}'] =
+    if examplePath
+      defaultRoutes[examplePath+'/{shortName}'] =
         description: "Get example requests for a route"
         GET: ->
           unless (route = app.routeIndex[@shortName]) and route.examples
@@ -191,9 +202,10 @@ class LazyApp
     @_prefix = restorePrefix
 
   ###
-  Find the first route template for the request, and assign it to ``req.route``
+  Find the first matching route template for the request, and assign it to
+  ``req.route``
   
-  This function is bound to the app and can be used as a separate middleware.
+  `Connect middleware, remains bound to the app object.`
   ###
   router: (req, res, next) =>
     try
@@ -215,7 +227,7 @@ class LazyApp
   ###
   Walk through ``req.vars`` call any registered coercions that apply.
   
-  This function is bound to the app and can be used as a separate middleware.
+  `Connect middleware, remains bound to the app object.`
   ###
   coerceAll: (req, res, next) =>
     return next() unless req.vars
@@ -239,7 +251,7 @@ class LazyApp
   ###
   Calls the handler function for the matched route if it exists.
 
-  This function is bound to the app and can be used as a separate middleware.
+  `Connect middleware, remains bound to the app object.`
   ###
   dispatch: (req, res, next) =>
     return next() unless req.route?
@@ -258,7 +270,7 @@ class LazyApp
         # do stuff ...
         res.end()
 
-  This function is bound to the app and can be used as a separate middleware.
+  `Connect middleware, remains bound to the app object.`
   ###
   renderer: (req, res, next) =>
     return next new @errors.NotFound if not req.route
@@ -277,13 +289,13 @@ class LazyApp
   ``@passErrors`` is set to false (the default) any unknown error will send
   a generic 500 error.
 
-  This function is bound to the app and can be used as a separate middleware.
+  `Connect middleware, remains bound to the app object.`
   ###
   errorHandler: (err, req, res, next) =>
     errName = err.constructor.name
     if @errorHandler[errName]?
       @errorHandler[errName](err, req, res, next)
-    else if @passErrors
+    else if @passErrors and not (err.code and err.message)
       next err, req, res, next
     else
       res.statusCode = err.code or 500
@@ -291,7 +303,6 @@ class LazyApp
       res.data = error: message
       # @renderer will re-error if req.route isn't set (e.g. no route matched)
       req.route ?= true
-      # Step back up to renderer
       @renderer req, res, next
 
   ###
