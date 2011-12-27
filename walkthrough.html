@@ -1,0 +1,255 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Guide &mdash; Lazorse 0.3.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.3.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="Lazorse 0.3.1 documentation" href="index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li><a href="index.html">Lazorse 0.3.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="guide">
+<h1>Guide<a class="headerlink" href="#guide" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="routing">
+<h2>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h2>
+<p>The most unusual piece of lazorse is the route syntax: it&#8217;s the same as the
+<a class="reference external" href="uritemplaterfc">draft spec</a> for URI templates, but adds parameter matching
+semantics on top. (There are more details and disclaimers at the bottom of this
+document).</p>
+<p>Lazorse creates a default index (<tt class="docutils literal"><span class="pre">/</span></tt>) route. This route responds to GET with
+an array of all named routes with their URI template and other metadata, such
+as a description and examples if they are available. So an app with a single
+route like:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">greetingLookup = english: </span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s2">&quot;Salut&quot;</span>
+
+<span class="nx">@route</span> <span class="s1">&#39;/{language}/greeting&#39;</span><span class="o">:</span>
+  <span class="nv">description: </span><span class="s2">&quot;Per-language greetings&quot;</span>
+  <span class="nv">shortName: </span><span class="s1">&#39;localGreeting&#39;</span>
+  <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@ok</span> <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span>
+  <span class="nv">POST: </span><span class="o">-&gt;</span> <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="p">;</span> <span class="nx">@ok</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Will return an array that looks like this:</p>
+<div class="highlight-javascript"><div class="highlight"><pre><span class="p">[</span>
+  <span class="p">{</span>
+    <span class="s2">&quot;template&quot;</span><span class="o">:</span> <span class="s2">&quot;/{language}/greetings&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;description&quot;</span><span class="o">:</span> <span class="s2">&quot;Retrieve or store per-language greetings&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;shortName&quot;</span><span class="o">:</span> <span class="s2">&quot;localGreeting&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;methods&quot;</span><span class="o">:</span> <span class="p">[</span><span class="s2">&quot;GET&quot;</span><span class="p">,</span> <span class="s2">&quot;POST&quot;</span><span class="p">]</span>
+  <span class="p">}</span>
+<span class="p">]</span>
+</pre></div>
+</div>
+<p>All of the keys are optional, but chances are you want to include at least one
+HTTP method handler, or your route will be unreachable. Also, remember that a
+route without a <tt class="docutils literal"><span class="pre">shortName</span></tt> will <em>not</em> show up in the index.</p>
+</div>
+<div class="section" id="coercions">
+<h2>Coercions<a class="headerlink" href="#coercions" title="Permalink to this headline">¶</a></h2>
+<p>Coercions are a direct rip-off of the <tt class="docutils literal"><span class="pre">app.param</span></tt> functionality of <a href="#id1"><span class="problematic" id="id2">Express_</span></a>.
+Coercion callbacks can be added anywhere in your app using the
+<tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.coerce</span></tt>, method and will be called whenever a URI template
+parameter name matches the coercion name. Let&#8217;s add a coercion to our greeting
+app to only allow pre-defined languages:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">@coerce</span> <span class="nv">language: </span><span class="nf">(language, next) -&gt;</span>
+  <span class="nv">language = </span><span class="nx">language</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
+  <span class="k">if</span> <span class="nx">language</span> <span class="o">not</span> <span class="k">in</span> <span class="nx">greetings</span>
+    <span class="nx">@error</span> <span class="s1">&#39;InvalidParameter&#39;</span><span class="p">,</span> <span class="s1">&#39;language&#39;</span><span class="p">,</span> <span class="nx">language</span>
+  <span class="k">else</span>
+    <span class="nx">next</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">language</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="handlers-and-contexts">
+<h2>Handlers and contexts<a class="headerlink" href="#handlers-and-contexts" title="Permalink to this headline">¶</a></h2>
+<p>Of course you&#8217;re probably wondering about those handler functions. Each handler
+function is called with <tt class="docutils literal"><span class="pre">this</span></tt> bound to a context containing the following keys:</p>
+<blockquote>
+<div><ul>
+<li><p class="first"><tt class="docutils literal"><span class="pre">req</span></tt> and <tt class="docutils literal"><span class="pre">res</span></tt>: request and response objects direct from connect.</p>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">data</span></tt> and <tt class="docutils literal"><span class="pre">ok</span></tt>: Callbacks that will set <tt class="docutils literal"><span class="pre">res.data</span></tt> for the renderer</dt>
+<dd><p class="first last">(Don&#8217;t worry, that&#8217;s next). The only difference is that <tt class="docutils literal"><span class="pre">ok</span></tt> does
+_not_ handle errors, it only accepts a single argument and assumes that&#8217;s
+what you want to return to the client. <tt class="docutils literal"><span class="pre">data</span></tt> on the other hand, will
+treat the first argument as an error in the idiomatic node style.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">link</span></tt>: Takes a route shortName and a context object and returns the result</dt>
+<dd><p class="first last">of expanding the corresponding URI template in that context.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div></blockquote>
+<p>Although the example handlers have taken no parameters, lazorse does pass them
+one parameter: the request context. This is meant to enable fat-arrow handlers
+in situations where that&#8217;s more convenient.</p>
+</div>
+<div class="section" id="rendering">
+<h2>Rendering<a class="headerlink" href="#rendering" title="Permalink to this headline">¶</a></h2>
+<p>Lazorse includes no templating. Instead, rendering is handled as another
+middleware in the stack. The default rendering middleware supports JSON and
+(very ugly) HTML. It inspects the <tt class="docutils literal"><span class="pre">Accept</span></tt> header to see what the client wants,
+and falls back to JSON when it can&#8217;t provide it. You can easily add or override
+the renderer for a new content type like so:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">render = </span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lazorse/render&#39;</span><span class="p">)</span>
+<span class="nx">render</span><span class="p">[</span><span class="s1">&#39;application/vnd.wonka-ticket&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nf">(req, res, next) -&gt;</span>
+  <span class="nv">ticket = </span><span class="nx">res</span><span class="p">.</span><span class="nx">data</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">write</span> <span class="nx">bufferOverflowThatTransportsClientToTheChocolateFactory</span><span class="p">()</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">end</span> <span class="s2">&quot;pwnd&quot;</span>
+</pre></div>
+</div>
+<p>Obviously, your own renderers would do something actually useful. In addition to
+<tt class="docutils literal"><span class="pre">res.data</span></tt>, Lazorse will add a <tt class="docutils literal"><span class="pre">req.route</span></tt> property that is the route object
+that serviced the request. This could be used to do something like look up a
+template or XML schema with <tt class="docutils literal"><span class="pre">req.route.shortName</span></tt>.</p>
+</div>
+<div class="section" id="error-handling">
+<h2>Error handling<a class="headerlink" href="#error-handling" title="Permalink to this headline">¶</a></h2>
+<p>The default error handler middleware will recognize any error with a <tt class="docutils literal"><span class="pre">code</span></tt>
+and <tt class="docutils literal"><span class="pre">message</span></tt> property. If an error does not have these properties and
+the <tt class="docutils literal"><span class="pre">passErrors</span></tt> property of the app is set to false (the default), a generic
+500 response will be returned. If <tt class="docutils literal"><span class="pre">passErrors</span></tt> is true, then the error will
+be passed to the next middleware in the stack.</p>
+<p>There is also an <tt class="docutils literal"><span class="pre">&#64;error</span></tt> helper function made available to handlers and
+coercions to help with returning errors. It can look up errors by name so that
+you don&#8217;t need to manually import your error types if you don&#8217;t want to. See the
+<tt class="docutils literal"><span class="pre">LazyApp.error</span></tt> documentation for details on how to register new error types.</p>
+</div>
+<div class="section" id="including-example-requests">
+<h2>Including Example Requests<a class="headerlink" href="#including-example-requests" title="Permalink to this headline">¶</a></h2>
+<p>You can include an array of example requests for a named route &#8220;inline&#8221; with the
+<tt class="docutils literal"><span class="pre">examples</span></tt> property. Each example should be an object with a <tt class="docutils literal"><span class="pre">method</span></tt>,
+<tt class="docutils literal"><span class="pre">vars</span></tt>, and (optional) <tt class="docutils literal"><span class="pre">body</span></tt> property. In our example app that would look
+like:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">@route</span> <span class="s1">&#39;/{language}/greeting&#39;</span><span class="o">:</span>
+  <span class="nv">description: </span><span class="s2">&quot;Per-language greetings&quot;</span>
+  <span class="nv">shortName: </span><span class="s1">&#39;localGreeting&#39;</span>
+  <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@ok</span> <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span>
+  <span class="nv">POST: </span><span class="o">-&gt;</span> <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="p">;</span> <span class="nx">@ok</span><span class="p">()</span>
+  <span class="nv">examples: </span><span class="p">[</span>
+    <span class="p">{</span><span class="nv">method: </span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">language: </span><span class="s1">&#39;english&#39;</span><span class="p">}}</span>
+    <span class="p">{</span><span class="nv">method: </span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">language: </span><span class="s1">&#39;english&#39;</span><span class="p">},</span> <span class="nv">body: </span><span class="s2">&quot;howdy&quot;</span><span class="p">}</span>
+  <span class="p">]</span>
+</pre></div>
+</div>
+<p>The route <tt class="docutils literal"><span class="pre">/examples/{shortName}</span></tt> will respond with the example request
+expanded into a full URI path:</p>
+<div class="highlight-javascript"><div class="highlight"><pre>
+</pre></div>
+</div>
+</div>
+<div class="section" id="more-info-on-uri-template-matching">
+<h2>More info on URI Template matching<a class="headerlink" href="#more-info-on-uri-template-matching" title="Permalink to this headline">¶</a></h2>
+<p>The matching semantics for URI templates are an addition to the RFC that
+specifies their expansion algorithm. Unfortunately, the nature of the expansion
+algorithm makes round-trip expansion and parsing of URIs inconsistent unless the
+following rules are followed:</p>
+<blockquote>
+<div><ul class="simple">
+<li>All parameters, excepting query string parameters, are required.</li>
+<li>Query string parameters cannot do positional matching. E.g. ?one&amp;two&amp;three
+will always fail. You must use named parameters in a query string.</li>
+<li>Query string parameters with an explode modifier (e.g. {?list*}) currently
+will parse differently than they expand. I strongly recommend
+not to use the explode modifier for query string params.</li>
+</ul>
+</div></blockquote>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">Guide</a><ul>
+<li><a class="reference internal" href="#routing">Routing</a></li>
+<li><a class="reference internal" href="#coercions">Coercions</a></li>
+<li><a class="reference internal" href="#handlers-and-contexts">Handlers and contexts</a></li>
+<li><a class="reference internal" href="#rendering">Rendering</a></li>
+<li><a class="reference internal" href="#error-handling">Error handling</a></li>
+<li><a class="reference internal" href="#including-example-requests">Including Example Requests</a></li>
+<li><a class="reference internal" href="#more-info-on-uri-template-matching">More info on URI Template matching</a></li>
+</ul>
+</li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/walkthrough.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li><a href="index.html">Lazorse 0.3.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2011, Stephen Sugden, Judd Vinet.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>

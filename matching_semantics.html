@@ -1,6 +1,4 @@
 
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -9,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; Lazorse 0.3.1 documentation</title>
+    <title>URI Template matching &mdash; Lazorse 0.3.1 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -26,15 +24,19 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Lazorse 0.3.1 documentation" href="index.html" /> 
+    <link rel="top" title="Lazorse 0.3.1 documentation" href="index.html" />
+    <link rel="prev" title="API documentation" href="api.html" /> 
   </head>
   <body>
     <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="#" title="General Index"
+          <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="api.html" title="API documentation"
+             accesskey="P">previous</a> |</li>
         <li><a href="index.html">Lazorse 0.3.1 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -44,93 +46,28 @@
         <div class="bodywrapper">
           <div class="body">
             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- <a href="#L"><strong>L</strong></a>
- 
+  <div class="section" id="uri-template-matching">
+<span id="id1"></span><h1>URI Template matching<a class="headerlink" href="#uri-template-matching" title="Permalink to this headline">¶</a></h1>
+<p>The matching semantics for URI templates are an addition to the RFC that
+specifies their expansion algorithm. Unfortunately, the nature of the expansion
+algorithm makes round-trip expansion and parsing of URIs inconsistent unless the
+following rules are followed:</p>
+<blockquote>
+<div><ul class="simple">
+<li>All parameters, excepting query string parameters, are required.</li>
+<li>Query string parameters cannot do positional matching. E.g. ?one&amp;two&amp;three
+will always fail. You must use named parameters in a query string.</li>
+<li>Query string parameters with an explode modifier (e.g. {?list*}) are greedy
+and so will parse differently than they expand.</li>
+</ul>
+</div></blockquote>
+<p>For these reasons, using explode modified querystring params is strongly
+discouraged. The RFC sets aside parenthesis for implementation extensions, so
+the tentative plan is to extend the grammar to allow specifying that a
+querystring param should be parsed as a list:</p>
+<div class="highlight-coffeescript"><pre>/urlpath{?param1,param2,listParam(sep=,),param3}</pre>
 </div>
-<h2 id="L">L</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="api.html#module-lazorse">lazorse (module)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::exports.app">lazorse/exports.app (function)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp">lazorse/LazyApp (class)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.buildContext">lazorse/LazyApp.buildContext (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.coerce">lazorse/LazyApp.coerce (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.coerceAll">lazorse/LazyApp.coerceAll (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.constructor">lazorse/LazyApp.constructor (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.dispatch">lazorse/LazyApp.dispatch (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.error">lazorse/LazyApp.error (method)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="api.html#lazorse::LazyApp.errorHandler">lazorse/LazyApp.errorHandler (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.extend">lazorse/LazyApp.extend (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.handle">lazorse/LazyApp.handle (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.helper">lazorse/LazyApp.helper (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.include">lazorse/LazyApp.include (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.renderer">lazorse/LazyApp.renderer (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.route">lazorse/LazyApp.route (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.router">lazorse/LazyApp.router (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::module.exports">lazorse/module.exports (function)</a>
-  </dt>
-
-  </dl></td>
-</tr></table>
-
+</div>
 
 
           </div>
@@ -138,9 +75,14 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-
-   
-
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="api.html"
+                        title="previous chapter">API documentation</a></p>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/matching_semantics.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -162,8 +104,11 @@
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="#" title="General Index"
+          <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="api.html" title="API documentation"
+             >previous</a> |</li>
         <li><a href="index.html">Lazorse 0.3.1 documentation</a> &raquo;</li> 
       </ul>
     </div>

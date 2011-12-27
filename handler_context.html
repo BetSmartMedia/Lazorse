@@ -1,6 +1,4 @@
 
-
-
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 
@@ -9,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Index &mdash; Lazorse 0.3.1 documentation</title>
+    <title>&lt;no title&gt; &mdash; Lazorse 0.3.1 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -33,7 +31,7 @@
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="#" title="General Index"
+          <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li><a href="index.html">Lazorse 0.3.1 documentation</a> &raquo;</li> 
       </ul>
@@ -44,93 +42,35 @@
         <div class="bodywrapper">
           <div class="body">
             
-
-<h1 id="index">Index</h1>
-
-<div class="genindex-jumpbox">
- <a href="#L"><strong>L</strong></a>
- 
-</div>
-<h2 id="L">L</h2>
-<table style="width: 100%" class="indextable genindextable"><tr>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="api.html#module-lazorse">lazorse (module)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::exports.app">lazorse/exports.app (function)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp">lazorse/LazyApp (class)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.buildContext">lazorse/LazyApp.buildContext (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.coerce">lazorse/LazyApp.coerce (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.coerceAll">lazorse/LazyApp.coerceAll (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.constructor">lazorse/LazyApp.constructor (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.dispatch">lazorse/LazyApp.dispatch (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.error">lazorse/LazyApp.error (method)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="api.html#lazorse::LazyApp.errorHandler">lazorse/LazyApp.errorHandler (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.extend">lazorse/LazyApp.extend (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.handle">lazorse/LazyApp.handle (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.helper">lazorse/LazyApp.helper (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.include">lazorse/LazyApp.include (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.renderer">lazorse/LazyApp.renderer (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.route">lazorse/LazyApp.route (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::LazyApp.router">lazorse/LazyApp.router (method)</a>
-  </dt>
-
-      
-  <dt><a href="api.html#lazorse::module.exports">lazorse/module.exports (function)</a>
-  </dt>
-
-  </dl></td>
-</tr></table>
-
+  <p>The context is made up of 2 objects in a delegation chain:</p>
+<blockquote>
+<div><ol class="arabic">
+<li><p class="first">An object containing URI Template variables, which delegates to:</p>
+</li>
+<li><p class="first">A request context object containing:</p>
+<ul>
+<li><p class="first">All helpers defined for the app (using <a class="reference internal" href="api.html#lazorse::LazyApp.helper" title="lazorse::LazyApp.helper"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.helper</span></tt></a>)</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">app</span></tt>: The lazorse app</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">req</span></tt>: The request object from node (via connect)</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">res</span></tt>: The response object from node (via connect)</p>
+</li>
+<li><p class="first"><tt class="docutils literal"><span class="pre">error</span></tt>: A callback that will return an error to the client.</p>
+</li>
+<li><dl class="first docutils">
+<dt><tt class="docutils literal"><span class="pre">next</span></tt>: A callback that will pass this request to the next middleware</dt>
+<dd><p class="first last">in the chain (via connect).</p>
+</dd>
+</dl>
+</li>
+</ul>
+</li>
+</ol>
+</div></blockquote>
+<p>Because this is a delegation chain, you need to be careful not to mask out helper
+names with variable names.</p>
 
 
           </div>
@@ -138,9 +78,11 @@
       </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
-
-   
-
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/handler_context.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
@@ -162,7 +104,7 @@
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="#" title="General Index"
+          <a href="genindex.html" title="General Index"
              >index</a></li>
         <li><a href="index.html">Lazorse 0.3.1 documentation</a> &raquo;</li> 
       </ul>
