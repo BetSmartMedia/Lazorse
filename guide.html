@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Walkthrough &mdash; Lazorse 0.3.1 documentation</title>
+    <title>Guide &mdash; Lazorse 0.3.1 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -50,8 +50,8 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <div class="section" id="walkthrough">
-<h1>Walkthrough<a class="headerlink" href="#walkthrough" title="Permalink to this headline">¶</a></h1>
+  <div class="section" id="guide">
+<h1>Guide<a class="headerlink" href="#guide" title="Permalink to this headline">¶</a></h1>
 <p>In this document we walk through the features of Lazorse, using it to create a
 simple API to store and retrieve language specific greetings.</p>
 <div class="section" id="creating-an-app">
@@ -67,7 +67,7 @@ simple API to store and retrieve language specific greetings.</p>
 <div class="section" id="routing">
 <h2>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h2>
 <p>The most unusual piece of lazorse is the route syntax: it&#8217;s the same as the
-<a class="reference external" href="uritemplaterfc">draft spec</a> for URI templates, but adds parameter matching
+<a class="reference external" href="http://tools.ietf.org/html/draft-gregorio-uritemplate-07">draft spec</a> for URI templates, but adds parameter matching
 semantics on top. (<a class="reference internal" href="matching_semantics.html#uri-template-matching"><em>Details and disclaimers</em></a>).</p>
 <p>You declare routes using the <a class="reference internal" href="api.html#lazorse::LazyApp.route" title="lazorse::LazyApp.route"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.route</span></tt></a> method:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span> <span class="o">-&gt;</span>
@@ -195,7 +195,7 @@ you don&#8217;t need to manually import your error types if you don&#8217;t want
     <span class="nx">res</span><span class="p">.</span><span class="nx">end</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">      I&#39;m a little teapot, short and stout.</span>
 <span class="s2">      Here is my handle, here is my spout.</span>
-<span class="s2">      When I get all steamed up, here me shout!</span>
+<span class="s2">      When I get all steamed up, hear me shout!</span>
 <span class="s2">      Tip! me over and pour me out!</span>
 <span class="s2">    &quot;&quot;&quot;</span>
 
@@ -251,7 +251,7 @@ expanded into a full URI path, so <tt class="docutils literal"><span class="pre"
         <div class="sphinxsidebarwrapper">
   <h3><a href="index.html">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Walkthrough</a><ul>
+<li><a class="reference internal" href="#">Guide</a><ul>
 <li><a class="reference internal" href="#creating-an-app">Creating an App</a></li>
 <li><a class="reference internal" href="#routing">Routing</a></li>
 <li><a class="reference internal" href="#coercions">Coercions</a></li>
