@@ -68,7 +68,7 @@ simple API to store and retrieve language specific greetings.</p>
 <h2>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h2>
 <p>The most unusual piece of lazorse is the route syntax: it&#8217;s the same as the
 <a class="reference external" href="uritemplaterfc">draft spec</a> for URI templates, but adds parameter matching
-semantics on top. (<em class="xref std std-ref">Details and disclaimers</em>).</p>
+semantics on top. (<a class="reference internal" href="matching_semantics.html#uri-template-matching"><em>Details and disclaimers</em></a>).</p>
 <p>You declare routes using the <a class="reference internal" href="api.html#lazorse::LazyApp.route" title="lazorse::LazyApp.route"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.route</span></tt></a> method:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span> <span class="o">-&gt;</span>
   <span class="nv">greetingLookup = english: </span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s2">&quot;Salut&quot;</span>
