@@ -1,15 +1,18 @@
 Lazorse!
 ========
 
-Lazorse is a connect middleware stack with a strong emphasis on extensibility
-that routes requests, coerces parameters, dispatches to handlers, and renders a 
-response. It borrows heavily from `other <zappa>`_ `awesome <coffeemate>`_ nodejs 
+Lazorse is a web-framework with a strong emphasis on extensibility and
+seperation of various concerns into independant middleware layers.
+
+It includes middleware to route requests, coerce parameters, dispatch to handlers,
+and render a response.  
+It borrows heavily from `other <zappa>`_ `awesome <coffeemate>`_ nodejs 
 `web frameworks <express>`_ but with a couple of twists designed to make writing 
 machine-consumable ReSTful APIs a little easier. Because it's all "just 
 middleware", you can also pull out and re-arrange the various pieces to better 
 suit the needs of your application.
 
-Be sure to check out the walkthrough_ and `API docs`_!
+Be sure to check out the guide_ and `API docs`_!
 
 What's the deal with the name?
 ------------------------------
@@ -27,5 +30,5 @@ MIT
 .. _zappa: http://zappajs.org
 .. _coffeemate: https://github.com/kadirpekel/coffeemate
 
-.. _walkthrough: http://betsmartmedia.github.com/Lazorse#walkthrough
-.. _API docs: http://betsmartmedia.github.com/Lazorse#api-documentation
+.. _guide: http://betsmartmedia.github.com/Lazorse/guide.html
+.. _API docs: http://betsmartmedia.github.com/Lazorse/api.html

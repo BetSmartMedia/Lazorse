@@ -4,7 +4,7 @@ lazorse ->
 
   # This defines a route that accepts both GET and POST
   @route "/greeting/{language}":
-    description: "Retrieve or store a per-language greeting"
+    description: "Per-language greetings"
     shortName: 'localGreeting'
     GET:  -> @ok greeting: greetingLookup[@language], language: @language
     POST: -> greetingLookup[@language] = @req.body; @ok()
@@ -15,8 +15,22 @@ lazorse ->
 
   # Define a coercion that restricts input languages to the
   # ones we have pre-defined
-  @coerce language: (lang, next) ->
-    lang = lang.toLowerCase()
-    unless greetingLookup[lang]?
-      return next new lazorse.InvalidParameter 'language', lang
-    next null, lang
+  @coerce language: (language, next) ->
+    language = language.toLowerCase()
+    if language not in greetings
+      errName = @req.method is 'GET' and 'NotFound' or 'InvalidParameter'
+      @error errName, 'language', language
+    else
+      next null, language
+
+  # Define a custom error type and register it with the app
+  TeapotError = (@code=418) ->
+  @error TeapotError, (err, req, res, next) ->
+    res.end """
+      I'm a little teapot, short and stout.
+      Here is my handle, here is my spout.
+      When I get all steamed up, here me shout!
+      Tip! me over and pour me out!
+    """
+
+  @route '/teapot': GET: -> @error 'TeapotError'

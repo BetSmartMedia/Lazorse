@@ -33,22 +33,16 @@ exports.app = (builder) -> new LazyApp builder
 ###
 The main application class, groups together five connect middleware:
   
-  - ``@router``: Finds the handler function for a request.
-  - ``@coerceAll``: Validates/translates incoming URI parameters into objects.
-  - ``@dispatch``: Calls the handler function found by the router.
-  - ``@renderer``: Writes data back to the client.
-  - ``@errorHandler``: Handles known error types.
+  - :meth:`lazorse::LazyApp.router`: Finds the handler function for a request.
+  - :meth:`lazorse::LazyApp.coerceAll`: Validates/translates incoming URI
+                                        parameters into objects.
+  - :meth:`lazorse::LazyApp.dispatch`: Calls the handler function found by the
+                                       router.
+  - :meth:`lazorse::LazyApp.renderer`: Writes data back to the client.
+  - :meth:`lazorse::LazyApp.errorHandler`: Handles known error types.
 
-Each of these middleware can be used individually, or the app itself can act
-as a single connect middleware.
-
-For modifying the configuration of the middleware, the app object exposes the
-functions ``@route``, ``@coerce``, and ``@error`` that allow you to register
-new callbacks at each of these stages.
-
-The renderer is extensible by assigning to ``@renderer[<content-type>]``,
-Lazorse doesn't include any concept of a "view", because it's trivial to
-implement a middleware for any number of templating systems.
+Each of these methods is bound to the ``LazyApp`` instance, so they can be used
+as standalone middleware without needing to wrap them in another callback.
 ###
 class LazyApp
   ###
@@ -66,7 +60,7 @@ class LazyApp
     @renderer[type] = func for type, func of require './render'
     @errors = {}
     @errors[name] = err for name, err of errors.types
-    @errorHandler[name] = handler for name, handler of errors.handlers 
+    @errorHandler[name] = handler for name, handler of errors.handlers
     @passErrors = false
     @helpers =
       ok: (data) ->
@@ -138,6 +132,9 @@ class LazyApp
       @route '/{category}/{thing}':
         shortName: "nameForClientsAndDocumentation"
         description: "a longer description"
+        GET: -> ...
+        POST: -> ...
+        PUT: -> ...
         examples: [
           {method: 'GET', vars: {category: 'cats', thing: 'jellybean'}}
         ]
@@ -160,18 +157,18 @@ class LazyApp
   object that maps helper names to callback functions.
   
   The helpers will be made available in the context used be coercions and
-  request handlers (see ``buildContext``). So if you register a helper named 'fryEgg' it will be available as ``@fryEgg``.  ###
+  request handlers (see :meth:`lazorse::LazyApp.buildContext`). So if you
+  register a helper named 'fryEgg' it will be available as ``@fryEgg``.
+  ###
   helper: (helpers) ->
     for name, helper of helpers
       @helpers[name] = helper
 
   ###
-  Register one or more coercions with the app. The coercions parameter should be
-  an object that maps parameter names to callback functions.
+  Register one or more template parameter coercions with the app. The coercions
+  parameter should be an object that maps parameter names to coercion functions.
   
-  The callbacks will be run in a special context (see ``buildContext``) when a
-  parameter with the same name is matched by a URI template. They will be passed
-  the string value from the URL and a continuation expecting (err, coercedValue)
+  See :rst:ref:`coercions` in the guide for an example.
   ###
   coerce: (coercions) ->
     for name, cb of coercions
@@ -183,13 +180,18 @@ class LazyApp
   
   Additionally, errors of this type will be available to the @error helper in
   handler/coercion callback by it's stringified name.
+  
+  See :rst:ref:`named errors <named-errors>` in the guide for an example.
   ###
   error: (errType, cb) ->
     errName = errType.name
     @errors[errName] = errType
     @errorHandler[errName] = cb
   
-  # Stealing yet another idea from zappa
+  ###
+  Call ``mod.include`` in the context of the app. The (optional) ``path``
+  parameter will be prefixed to all routes defined by the include.
+  ###
   include: (path, mod) ->
     if typeof path.include == 'function'
       mod = path
@@ -306,29 +308,15 @@ class LazyApp
       @renderer req, res, next
 
   ###
-  Used internally to build the context that coercions, request handlers, and
-  helpers run in. The context is made up of 2 objects in a delegation chain:
-
-      1. An object containing URI Template variables, which delegates to:
-      2. Request context, contains:
-
-         * ``app``: The lazorse app
-         * ``req``: The request object from node (via connect)
-         * ``res``: The response object from node (via connect)
-         * ``errors``: An object containing Error constructors
-         * ``next``: The next callback from connect
-
-  Because this is a delegation chain, you need to be careful not to mask out helper
-  names with variable names.
+  .. include:: handler_context.rst
   ###
   buildContext: (req, res, next) ->
     ctx = {req, res, next}
+    for n, h of @helpers
+      ctx[n] = if 'function' == typeof h then h.bind vars else h
     ctx.app = @
     vars = req.vars
     vars.__proto__ = ctx
-    ctx.errors = errors
-    for n, h of @helpers
-      ctx[n] = if 'function' == typeof h then h.bind vars else h
     vars
 
 
