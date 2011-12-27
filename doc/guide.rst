@@ -1,5 +1,5 @@
 ===========
-Walkthrough
+Guide
 ===========
 
 In this document we walk through the features of Lazorse, using it to create a
@@ -22,7 +22,7 @@ Routing
 -------
 
 The most unusual piece of lazorse is the route syntax: it's the same as the 
-`draft spec <uri template rfc>`_ for URI templates, but adds parameter matching
+`draft spec`_ for URI templates, but adds parameter matching
 semantics on top. (:ref:`Details and disclaimers <uri-template-matching>`).
 
 You declare routes using the :meth:`lazorse::LazyApp.route` method:
@@ -167,3 +167,5 @@ expanded into a full URI path, so ``GET /examples/localGreeting`` would return:
           "body": "howdy"
         }
     ]
+
+.. _draft spec: http://tools.ietf.org/html/draft-gregorio-uritemplate-07
