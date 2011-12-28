@@ -182,7 +182,8 @@ class LazyApp
   ###
   coerce: (coercions) ->
     for name, cb of coercions
-      throw new Error "Duplicate coercion name: #{name}" if @coercions[name]?  @coercions[name] = cb
+      throw new Error "Duplicate coercion name: #{name}" if @coercions[name]?
+      @coercions[name] = cb
 
   ###
   Register an error type with the app. The callback wlll be called by
