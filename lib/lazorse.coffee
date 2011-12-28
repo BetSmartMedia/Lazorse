@@ -71,6 +71,9 @@ class LazyApp
     @errors[name] = err for name, err of errors.types
     @errorHandlers[name] = handler for name, handler of errors.handlers
 
+    # handleErrors must be manually rebound to preserve it's arity.
+    @handleErrors = @handleErrors.bind @
+
     @passErrors = false
     @helpers =
       ok: (data) ->
@@ -189,6 +192,9 @@ class LazyApp
   Register an error type with the app. The callback wlll be called by
   ``@errorHandler`` when an error of this type is encountered.
 
+  Note that this *requires* named functions, so in coffeescript this means
+  using classes.
+
   Additionally, errors of this type will be available to the @error helper in
   handler/coercion callback by it's stringified name.
 
@@ -197,7 +203,7 @@ class LazyApp
   error: (errType, cb) ->
     errName = errType.name
     @errors[errName] = errType
-    @errorHandlers[errName] = cb
+    @errorHandlers[errName] = cb if cb?
 
 
   ###
@@ -314,8 +320,9 @@ class LazyApp
 
   `Connect middleware, remains bound to the app object.`
   ###
-  handleErrors: (err, req, res, next) =>
+  handleErrors: (err, req, res, next) ->
     errName = err.constructor.name
+    console.log err
     if @errorHandlers[errName]?
       @errorHandlers[errName](err, req, res, next)
     else if @passErrors and not (err.code and err.message)
