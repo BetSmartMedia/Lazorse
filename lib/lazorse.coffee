@@ -21,7 +21,6 @@ module.exports = exports = (builder) ->
   server.use connect.logger()
   server.use connect.bodyParser()
   server.use app
-  server.use connect.errorHandler()
   server.listen app.port
 
 ###
@@ -32,14 +31,14 @@ exports.app = (builder) -> new LazyApp builder
 
 ###
 The main application class, groups together five connect middleware:
-  
-  - :meth:`lazorse::LazyApp.router`: Finds the handler function for a request.
-  - :meth:`lazorse::LazyApp.coerceAll`: Validates/translates incoming URI
-                                        parameters into objects.
-  - :meth:`lazorse::LazyApp.dispatch`: Calls the handler function found by the
-                                       router.
-  - :meth:`lazorse::LazyApp.renderer`: Writes data back to the client.
-  - :meth:`lazorse::LazyApp.errorHandler`: Handles known error types.
+
+  - :meth:`lazorse::LazyApp.findRoute`: Finds the handler function for a request.
+  - :meth:`lazorse::LazyApp.coerceParams`: Validates/translates incoming URI
+                                           parameters into objects.
+  - :meth:`lazorse::LazyApp.dispatchHandler`: Calls the handler function found by
+                                              the router.
+  - :meth:`lazorse::LazyApp.renderResponse`: Writes data back to the client.
+  - :meth:`lazorse::LazyApp.handleErrors`: Handles known error types.
 
 Each of these methods is bound to the ``LazyApp`` instance, so they can be used
 as standalone middleware without needing to wrap them in another callback.
@@ -57,10 +56,14 @@ class LazyApp
 
     # Defaults
     @port = 3000
-    @renderer[type] = func for type, func of require './render'
+    @renderers = {}
+    @renderers[type] = func for type, func of require './render'
+
     @errors = {}
+    @errorHandlers = {}
     @errors[name] = err for name, err of errors.types
-    @errorHandler[name] = handler for name, handler of errors.handlers
+    @errorHandlers[name] = handler for name, handler of errors.handlers
+
     @passErrors = false
     @helpers =
       ok: (data) ->
@@ -155,7 +158,7 @@ class LazyApp
   ###
   Register one or more helper functions. The ``helpers`` parameter should be an
   object that maps helper names to callback functions.
-  
+
   The helpers will be made available in the context used be coercions and
   request handlers (see :meth:`lazorse::LazyApp.buildContext`). So if you
   register a helper named 'fryEgg' it will be available as ``@fryEgg``.
@@ -167,7 +170,7 @@ class LazyApp
   ###
   Register one or more template parameter coercions with the app. The coercions
   parameter should be an object that maps parameter names to coercion functions.
-  
+
   See :rst:ref:`coercions` in the guide for an example.
   ###
   coerce: (coercions) ->
@@ -177,17 +180,31 @@ class LazyApp
   ###
   Register an error type with the app. The callback wlll be called by
   ``@errorHandler`` when an error of this type is encountered.
-  
+
   Additionally, errors of this type will be available to the @error helper in
   handler/coercion callback by it's stringified name.
-  
+
   See :rst:ref:`named errors <named-errors>` in the guide for an example.
   ###
   error: (errType, cb) ->
     errName = errType.name
     @errors[errName] = errType
-    @errorHandler[errName] = cb
-  
+    @errorHandlers[errName] = cb
+
+
+  ###
+  Register a new renderer function with the app. Can be supplied with two
+  parameters: a content-type and renderer function, or an object mapping
+  content-types to rendering functions.
+
+  See :rst:ref:`Rendering` in the guide for an example of a custom renderer.
+  ###
+  render: (contentType, renderer) ->
+    if typeof contentType is 'object'
+      @renderers[ct] = r for ct, r of contentType
+    else
+      @renderers[contentType] = renderer
+
   ###
   Call ``mod.include`` in the context of the app. The (optional) ``path``
   parameter will be prefixed to all routes defined by the include.
@@ -206,10 +223,10 @@ class LazyApp
   ###
   Find the first matching route template for the request, and assign it to
   ``req.route``
-  
+
   `Connect middleware, remains bound to the app object.`
   ###
-  router: (req, res, next) =>
+  findRoute: (req, res, next) =>
     try
       i = 0
       routes = @routeTable[req.method]
@@ -228,10 +245,10 @@ class LazyApp
 
   ###
   Walk through ``req.vars`` call any registered coercions that apply.
-  
+
   `Connect middleware, remains bound to the app object.`
   ###
-  coerceAll: (req, res, next) =>
+  coerceParams: (req, res, next) =>
     return next() unless req.vars
     ctx = @buildContext req, res, next
     varNames = (k for k in Object.keys req.vars when @coercions[k]?)
@@ -255,7 +272,7 @@ class LazyApp
 
   `Connect middleware, remains bound to the app object.`
   ###
-  dispatch: (req, res, next) =>
+  dispatchHandler: (req, res, next) =>
     return next() unless req.route?
     ctx = @buildContext req, res, next
     # the route handler should call next()
@@ -263,29 +280,25 @@ class LazyApp
 
   ###
   Renders the data in ``req.data`` to the client.
-  
+
   Inspects the ``accept`` header and falls back to JSON if
   it can't find a type it knows how to render. To install or override the
-  renderer for a given content/type add it to
-
-      @renderer['text/html'] = (req, res, next) ->
-        # do stuff ...
-        res.end()
+  renderer for a given content/type use ``lazorse::LazyApp.render``
 
   `Connect middleware, remains bound to the app object.`
   ###
-  renderer: (req, res, next) =>
+  renderResponse: (req, res, next) =>
     return next new @errors.NotFound if not req.route
     return next new @errors.NoResponseData if not res.data
     if req.headers.accept and [types, _] = req.headers.accept.split ';'
       for type in types.split ','
-        if @renderer[type]?
+        if @renderers[type]?
           res.setHeader 'Content-Type', type
-          return @renderer[type] req, res, next
+          return @renderers[type] req, res, next
     # Fall back to JSON
     res.setHeader 'Content-Type', 'application/json'
-    @renderer['application/json'] req, res, next
- 
+    @renderers['application/json'] req, res, next
+
   ###
   Intercept known errors types and return an appropriate response. If
   ``@passErrors`` is set to false (the default) any unknown error will send
@@ -293,50 +306,53 @@ class LazyApp
 
   `Connect middleware, remains bound to the app object.`
   ###
-  errorHandler: (err, req, res, next) =>
+  handleErrors: (err, req, res, next) =>
     errName = err.constructor.name
-    if @errorHandler[errName]?
-      @errorHandler[errName](err, req, res, next)
+    if @errorHandlers[errName]?
+      @errorHandlers[errName](err, req, res, next)
     else if @passErrors and not (err.code and err.message)
-      next err, req, res, next
+      next err, req, res
     else
       res.statusCode = err.code or 500
       message = 'string' == typeof err and err or err.message or "Internal error"
       res.data = error: message
       # @renderer will re-error if req.route isn't set (e.g. no route matched)
       req.route ?= true
-      @renderer req, res, next
+      @renderResponse req, res, next
 
   ###
   .. include:: handler_context.rst
   ###
   buildContext: (req, res, next) ->
-    ctx = {req, res, next}
+    ctx = {req, res, next, app: this}
+    vars = req.vars
     for n, h of @helpers
       ctx[n] = if 'function' == typeof h then h.bind vars else h
-    ctx.app = @
-    vars = req.vars
     vars.__proto__ = ctx
     vars
-
 
   ###
   Extend a connect server with the default middleware stack from this app
   ###
   extend: (server) ->
-    for mw in [@router, @coerceAll, @dispatch, @renderer, @errorHandler]
-      server.use mw
+    server.use mw for mw in [
+      @findRoute,
+      @coerceParams,
+      @dispatchHandler,
+      @renderResponse,
+      @handleErrors,
+    ]
 
   ###
   Act as a single connect middleware
   ###
   handle: (req, res, goodbyeLazorse) ->
-    stack = [@router, @coerceAll, @dispatch, @renderer]
+    stack = [@findRoute, @coerceParams, @dispatchHandler, @renderResponse]
     nextMiddleware = =>
       mw = stack.shift()
       return goodbyeLazorse() unless mw?
       mw req, res, (err) =>
-        return @errorHandler err, req, res, goodbyeLazorse if err?
+        return @handleErrors err, req, res, goodbyeLazorse if err?
         nextMiddleware()
     nextMiddleware()
 
