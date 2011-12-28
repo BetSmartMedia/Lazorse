@@ -89,6 +89,8 @@ Although the example handlers have taken no parameters, lazorse does pass them
 one parameter: this request context. This is meant to enable fat-arrow handlers
 in situations where that's more convenient.
 
+.. _rendering:
+
 Rendering
 ---------
 

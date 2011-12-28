@@ -283,7 +283,7 @@ class LazyApp
 
   Inspects the ``accept`` header and falls back to JSON if
   it can't find a type it knows how to render. To install or override the
-  renderer for a given content/type use ``lazorse::LazyApp.render``
+  renderer for a given content/type use :meth:`lazorse::LazyApp.render`
 
   `Connect middleware, remains bound to the app object.`
   ###
