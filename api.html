@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>API documentation &mdash; Lazorse 0.3.1 documentation</title>
+    <title>API documentation &mdash; Lazorse 0.4.0 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.3.1',
+        VERSION:     '0.4.0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,9 +24,9 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Lazorse 0.3.1 documentation" href="index.html" />
+    <link rel="top" title="Lazorse 0.4.0 documentation" href="index.html" />
     <link rel="next" title="URI Template matching" href="matching_semantics.html" />
-    <link rel="prev" title="Walkthrough" href="guide.html" /> 
+    <link rel="prev" title="Guide" href="guide.html" /> 
   </head>
   <body>
     <div class="related">
@@ -39,9 +39,9 @@
           <a href="matching_semantics.html" title="URI Template matching"
              accesskey="N">next</a> |</li>
         <li class="right" >
-          <a href="guide.html" title="Walkthrough"
+          <a href="guide.html" title="Guide"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Lazorse 0.3.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Lazorse 0.4.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -74,23 +74,23 @@ server</p>
 <dd><p>The main application class, groups together five connect middleware:</p>
 <blockquote>
 <div><ul>
-<li><p class="first"><a class="reference internal" href="#lazorse::LazyApp.router" title="lazorse::LazyApp.router"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.router</span></tt></a>: Finds the handler function for a request.</p>
+<li><p class="first"><a class="reference internal" href="#lazorse::LazyApp.findRoute" title="lazorse::LazyApp.findRoute"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.findRoute</span></tt></a>: Finds the handler function for a request.</p>
 </li>
 <li><dl class="first docutils">
-<dt><a class="reference internal" href="#lazorse::LazyApp.coerceAll" title="lazorse::LazyApp.coerceAll"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.coerceAll</span></tt></a>: Validates/translates incoming URI</dt>
+<dt><a class="reference internal" href="#lazorse::LazyApp.coerceParams" title="lazorse::LazyApp.coerceParams"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.coerceParams</span></tt></a>: Validates/translates incoming URI</dt>
 <dd><p class="first last">parameters into objects.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt><a class="reference internal" href="#lazorse::LazyApp.dispatch" title="lazorse::LazyApp.dispatch"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.dispatch</span></tt></a>: Calls the handler function found by the</dt>
-<dd><p class="first last">router.</p>
+<dt><a class="reference internal" href="#lazorse::LazyApp.dispatchHandler" title="lazorse::LazyApp.dispatchHandler"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.dispatchHandler</span></tt></a>: Calls the handler function found by</dt>
+<dd><p class="first last">the router.</p>
 </dd>
 </dl>
 </li>
-<li><p class="first"><a class="reference internal" href="#lazorse::LazyApp.renderer" title="lazorse::LazyApp.renderer"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.renderer</span></tt></a>: Writes data back to the client.</p>
+<li><p class="first"><a class="reference internal" href="#lazorse::LazyApp.renderResponse" title="lazorse::LazyApp.renderResponse"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.renderResponse</span></tt></a>: Writes data back to the client.</p>
 </li>
-<li><p class="first"><a class="reference internal" href="#lazorse::LazyApp.errorHandler" title="lazorse::LazyApp.errorHandler"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.errorHandler</span></tt></a>: Handles known error types.</p>
+<li><p class="first"><a class="reference internal" href="#lazorse::LazyApp.handleErrors" title="lazorse::LazyApp.handleErrors"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.handleErrors</span></tt></a>: Handles known error types.</p>
 </li>
 </ul>
 </div></blockquote>
@@ -153,6 +153,15 @@ handler/coercion callback by it&#8217;s stringified name.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="lazorse::LazyApp.render">
+<em class="property">method </em><tt class="descname">LazyApp.render</tt><big>(</big><em>contentType</em>, <em>renderer</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.render" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register a new renderer function with the app. Can be supplied with two
+parameters: a content-type and renderer function, or an object mapping
+content-types to rendering functions.</p>
+<p>See <a class="reference internal" href="guide.html#rendering"><em>Rendering</em></a> in the guide for an example of a custom renderer.</p>
+</dd></dl>
+
+<dl class="method">
 <dt id="lazorse::LazyApp.include">
 <em class="property">method </em><tt class="descname">LazyApp.include</tt><big>(</big><em>path</em>, <em>mod</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.include" title="Permalink to this definition">¶</a></dt>
 <dd><p>Call <tt class="docutils literal"><span class="pre">mod.include</span></tt> in the context of the app. The (optional) <tt class="docutils literal"><span class="pre">path</span></tt>
@@ -160,47 +169,40 @@ parameter will be prefixed to all routes defined by the include.</p>
 </dd></dl>
 
 <dl class="method">
-<dt id="lazorse::LazyApp.router">
-<em class="property">method </em><tt class="descname">LazyApp.router</tt><big>(</big><em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.router" title="Permalink to this definition">¶</a></dt>
+<dt id="lazorse::LazyApp.findRoute">
+<em class="property">method </em><tt class="descname">LazyApp.findRoute</tt><big>(</big><em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.findRoute" title="Permalink to this definition">¶</a></dt>
 <dd><p>Find the first matching route template for the request, and assign it to
 <tt class="docutils literal"><span class="pre">req.route</span></tt></p>
 <p><cite>Connect middleware, remains bound to the app object.</cite></p>
 </dd></dl>
 
 <dl class="method">
-<dt id="lazorse::LazyApp.coerceAll">
-<em class="property">method </em><tt class="descname">LazyApp.coerceAll</tt><big>(</big><em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.coerceAll" title="Permalink to this definition">¶</a></dt>
+<dt id="lazorse::LazyApp.coerceParams">
+<em class="property">method </em><tt class="descname">LazyApp.coerceParams</tt><big>(</big><em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.coerceParams" title="Permalink to this definition">¶</a></dt>
 <dd><p>Walk through <tt class="docutils literal"><span class="pre">req.vars</span></tt> call any registered coercions that apply.</p>
 <p><cite>Connect middleware, remains bound to the app object.</cite></p>
 </dd></dl>
 
 <dl class="method">
-<dt id="lazorse::LazyApp.dispatch">
-<em class="property">method </em><tt class="descname">LazyApp.dispatch</tt><big>(</big><em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.dispatch" title="Permalink to this definition">¶</a></dt>
+<dt id="lazorse::LazyApp.dispatchHandler">
+<em class="property">method </em><tt class="descname">LazyApp.dispatchHandler</tt><big>(</big><em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.dispatchHandler" title="Permalink to this definition">¶</a></dt>
 <dd><p>Calls the handler function for the matched route if it exists.</p>
 <p><cite>Connect middleware, remains bound to the app object.</cite></p>
 </dd></dl>
 
 <dl class="method">
-<dt id="lazorse::LazyApp.renderer">
-<em class="property">method </em><tt class="descname">LazyApp.renderer</tt><big>(</big><em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.renderer" title="Permalink to this definition">¶</a></dt>
+<dt id="lazorse::LazyApp.renderResponse">
+<em class="property">method </em><tt class="descname">LazyApp.renderResponse</tt><big>(</big><em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.renderResponse" title="Permalink to this definition">¶</a></dt>
 <dd><p>Renders the data in <tt class="docutils literal"><span class="pre">req.data</span></tt> to the client.</p>
 <p>Inspects the <tt class="docutils literal"><span class="pre">accept</span></tt> header and falls back to JSON if
 it can&#8217;t find a type it knows how to render. To install or override the
-renderer for a given content/type add it to</p>
-<blockquote>
-<div><dl class="docutils">
-<dt>&#64;renderer[&#8216;text/html&#8217;] = (req, res, next) -&gt;</dt>
-<dd># do stuff ...
-res.end()</dd>
-</dl>
-</div></blockquote>
+renderer for a given content/type use <a class="reference internal" href="#lazorse::LazyApp.render" title="lazorse::LazyApp.render"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.render</span></tt></a></p>
 <p><cite>Connect middleware, remains bound to the app object.</cite></p>
 </dd></dl>
 
 <dl class="method">
-<dt id="lazorse::LazyApp.errorHandler">
-<em class="property">method </em><tt class="descname">LazyApp.errorHandler</tt><big>(</big><em>err</em>, <em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.errorHandler" title="Permalink to this definition">¶</a></dt>
+<dt id="lazorse::LazyApp.handleErrors">
+<em class="property">method </em><tt class="descname">LazyApp.handleErrors</tt><big>(</big><em>err</em>, <em>req</em>, <em>res</em>, <em>next</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.handleErrors" title="Permalink to this definition">¶</a></dt>
 <dd><p>Intercept known errors types and return an appropriate response. If
 <tt class="docutils literal"><span class="pre">&#64;passErrors</span></tt> is set to false (the default) any unknown error will send
 a generic 500 error.</p>
@@ -265,7 +267,7 @@ names with variable names.</p>
         <div class="sphinxsidebarwrapper">
   <h4>Previous topic</h4>
   <p class="topless"><a href="guide.html"
-                        title="previous chapter">Walkthrough</a></p>
+                        title="previous chapter">Guide</a></p>
   <h4>Next topic</h4>
   <p class="topless"><a href="matching_semantics.html"
                         title="next chapter">URI Template matching</a></p>
@@ -301,9 +303,9 @@ names with variable names.</p>
           <a href="matching_semantics.html" title="URI Template matching"
              >next</a> |</li>
         <li class="right" >
-          <a href="guide.html" title="Walkthrough"
+          <a href="guide.html" title="Guide"
              >previous</a> |</li>
-        <li><a href="index.html">Lazorse 0.3.1 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Lazorse 0.4.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">

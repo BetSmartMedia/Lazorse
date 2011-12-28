@@ -3,7 +3,8 @@ Guide
 ===========
 
 In this document we walk through the features of Lazorse, using it to create a
-simple API to store and retrieve language specific greetings.
+simple API to store and retrieve language specific greetings. The full app can be
+viewed at https://github.com/BetSmartMedia/Lazorse/blob/master/examples/languages.coffee.
 
 Creating an App
 ---------------
@@ -21,7 +22,7 @@ Lazorse uses a "builder" pattern for creating app objects. You supply the functi
 Routing
 -------
 
-The most unusual piece of lazorse is the route syntax: it's the same as the 
+The most unusual piece of lazorse is the route syntax: it's the same as the
 `draft spec`_ for URI templates, but adds parameter matching
 semantics on top. (:ref:`Details and disclaimers <uri-template-matching>`).
 
@@ -35,7 +36,7 @@ You declare routes using the :meth:`lazorse::LazyApp.route` method:
 All of the keys are optional, but chances are you want to include at least one
 HTTP method handler, or your route will be unreachable. The handlers are called in
 a special context that contains all of the matched URI template parameters and a
-few other things (see :ref:`handler-and-coercion-contexts` below for details) 
+few other things (see :ref:`handler-and-coercion-contexts` below for details)
 
 Lazorse also creates a default index (``/``) route. This route responds to GET
 with an array of all named routes with their URI template and other metadata,
@@ -46,7 +47,7 @@ an array that looks like this:
 
     [
       {
-        "template": "/{language}/greetings", 
+        "template": "/{language}/greetings",
         "description": "Per-language greetings",
         "shortName": "localGreeting",
         "methods": ["GET", "POST"]
@@ -63,7 +64,7 @@ Coercions
 `Coercions are a direct rip-off of the app.param() functionality of Express`
 
 Coercion callbacks can be added anywhere in your app using the
-:meth:`~lazorse::LazyApp.coerce` method. The coercion will be called after if a 
+:meth:`~lazorse::LazyApp.coerce` method. The coercion will be called after if a
 the matching URI template captured a parameter of the same name. This adds a
 coercion to our greeting app that will restrict the ``language`` parameter to only
 pre-defined languages:
@@ -71,7 +72,7 @@ pre-defined languages:
 .. literalinclude::  ../examples/languages.coffee
     :language: coffeescript
     :start-after: pre-defined
-    :end-before: custom error
+    :end-before: custom render
 
 This example also makes use of :ref:`named errors <named-errors>`,
 
@@ -88,6 +89,8 @@ Although the example handlers have taken no parameters, lazorse does pass them
 one parameter: this request context. This is meant to enable fat-arrow handlers
 in situations where that's more convenient.
 
+.. _rendering:
+
 Rendering
 ---------
 
@@ -97,14 +100,10 @@ middleware in the stack. The default rendering middleware supports JSON and
 and falls back to JSON when it can't provide it. You can easily add or override
 the renderer for a new content type like so:
 
-.. sourcecode:: coffeescript
-
-  render = require('lazorse/render')
-  render['text/html'] = (req, res, next) ->
-    res.setHeader 'Content-Type', 'text/html'
-    res.write '<html><body><pre>'
-    res.write JSON.stringify res.data
-    res.end '</pre></body></html>'
+.. literalinclude:: ../examples/languages.coffee
+  :language: coffeescript
+  :start-after: custom rendering
+  :end-before: custom error
 
 Obviously, your own renderers would do something actually useful. In addition to
 ``res.data``, Lazorse will add a ``req.route`` property that is the route object
@@ -133,7 +132,7 @@ To register a new error type with a callback, we use the
 
 .. literalinclude::  ../examples/languages.coffee
     :language: coffeescript
-    :start-after: next null, language
+    :start-after: custom error
 
 Now our handlers (and coercions) can return 418s easily, no matter what file they
 are defined in.
