@@ -23,8 +23,20 @@ lazorse ->
     else
       next null, language
 
+  # Extend the app with a custom rendering engine
+  # Uses https://github.com/visionmedia/consolidate.js
+  # and a non-standard route property ``template``
+  cons = require 'consolidate'
+  @render 'text/html', (req, res, next) ->
+    res.setHeader 'Content-Type', 'text/html'
+    engine = req.route.template.engine or 'swig'
+    path   = req.route.template.path or req.route.shortName or 'fallback.html'
+    cons[engine] path, res.data, (err, html) ->
+      if err? then next err else res.end html
+
   # Define a custom error type and register it with the app
-  TeapotError = (@code=418) ->
+  TeapotError = -> @code = 418
+
   @error TeapotError, (err, req, res, next) ->
     res.end """
       I'm a little teapot, short and stout.
