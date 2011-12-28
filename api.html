@@ -73,26 +73,18 @@ server</p>
 <em class="property">class </em><tt class="descname">LazyApp</tt><a class="headerlink" href="#lazorse::LazyApp" title="Permalink to this definition">¶</a></dt>
 <dd><p>The main application class, groups together five connect middleware:</p>
 <blockquote>
-<div><ul>
-<li><p class="first"><a class="reference internal" href="#lazorse::LazyApp.findRoute" title="lazorse::LazyApp.findRoute"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.findRoute</span></tt></a>: Finds the handler function for a request.</p>
-</li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="#lazorse::LazyApp.coerceParams" title="lazorse::LazyApp.coerceParams"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.coerceParams</span></tt></a>: Validates/translates incoming URI</dt>
-<dd><p class="first last">parameters into objects.</p>
-</dd>
+<div><dl class="docutils">
+<dt><a class="reference internal" href="#lazorse::LazyApp.findRoute" title="lazorse::LazyApp.findRoute"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.findRoute</span></tt></a></dt>
+<dd>Finds the handler function for a request.</dd>
+<dt><a class="reference internal" href="#lazorse::LazyApp.coerceParams" title="lazorse::LazyApp.coerceParams"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.coerceParams</span></tt></a></dt>
+<dd>Validates/translates incoming URI parameters into objects.</dd>
+<dt><a class="reference internal" href="#lazorse::LazyApp.dispatchHandler" title="lazorse::LazyApp.dispatchHandler"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.dispatchHandler</span></tt></a></dt>
+<dd>Calls the handler function found by the router.</dd>
+<dt><a class="reference internal" href="#lazorse::LazyApp.renderResponse" title="lazorse::LazyApp.renderResponse"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.renderResponse</span></tt></a></dt>
+<dd>Writes data back to the client.</dd>
+<dt><a class="reference internal" href="#lazorse::LazyApp.handleErrors" title="lazorse::LazyApp.handleErrors"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.handleErrors</span></tt></a></dt>
+<dd>Handles known error types.</dd>
 </dl>
-</li>
-<li><dl class="first docutils">
-<dt><a class="reference internal" href="#lazorse::LazyApp.dispatchHandler" title="lazorse::LazyApp.dispatchHandler"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.dispatchHandler</span></tt></a>: Calls the handler function found by</dt>
-<dd><p class="first last">the router.</p>
-</dd>
-</dl>
-</li>
-<li><p class="first"><a class="reference internal" href="#lazorse::LazyApp.renderResponse" title="lazorse::LazyApp.renderResponse"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.renderResponse</span></tt></a>: Writes data back to the client.</p>
-</li>
-<li><p class="first"><a class="reference internal" href="#lazorse::LazyApp.handleErrors" title="lazorse::LazyApp.handleErrors"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.handleErrors</span></tt></a>: Handles known error types.</p>
-</li>
-</ul>
 </div></blockquote>
 <p>Each of these methods is bound to the <tt class="docutils literal"><span class="pre">LazyApp</span></tt> instance, so they can be used
 as standalone middleware without needing to wrap them in another callback.</p>
