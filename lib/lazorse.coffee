@@ -30,15 +30,22 @@ server
 exports.app = (builder) -> new LazyApp builder
 
 ###
-The main application class, groups together five connect middleware:
+The main application class groups together five connect middleware:
 
-  - :meth:`lazorse::LazyApp.findRoute`: Finds the handler function for a request.
-  - :meth:`lazorse::LazyApp.coerceParams`: Validates/translates incoming URI
-                                           parameters into objects.
-  - :meth:`lazorse::LazyApp.dispatchHandler`: Calls the handler function found by
-                                              the router.
-  - :meth:`lazorse::LazyApp.renderResponse`: Writes data back to the client.
-  - :meth:`lazorse::LazyApp.handleErrors`: Handles known error types.
+  :meth:`lazorse::LazyApp.findRoute`
+    Finds the handler function for a request.
+
+  :meth:`lazorse::LazyApp.coerceParams`
+    Validates/translates incoming URI parameters into objects.
+
+  :meth:`lazorse::LazyApp.dispatchHandler`
+    Calls the handler function found by the router.
+
+  :meth:`lazorse::LazyApp.renderResponse`
+    Writes data back to the client.
+
+  :meth:`lazorse::LazyApp.handleErrors`
+    Handles known error types.
 
 Each of these methods is bound to the ``LazyApp`` instance, so they can be used
 as standalone middleware without needing to wrap them in another callback.
