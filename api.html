@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>API documentation &mdash; Lazorse 0.4.0 documentation</title>
+    <title>API documentation &mdash; Lazorse 0.4.3 documentation</title>
     
     <link rel="stylesheet" href="_static/nature.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -15,7 +15,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.4.0',
+        VERSION:     '0.4.3',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -24,7 +24,7 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="Lazorse 0.4.0 documentation" href="index.html" />
+    <link rel="top" title="Lazorse 0.4.3 documentation" href="index.html" />
     <link rel="next" title="URI Template matching" href="matching_semantics.html" />
     <link rel="prev" title="Guide" href="guide.html" /> 
   </head>
@@ -41,7 +41,7 @@
         <li class="right" >
           <a href="guide.html" title="Guide"
              accesskey="P">previous</a> |</li>
-        <li><a href="index.html">Lazorse 0.4.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Lazorse 0.4.3 documentation</a> &raquo;</li> 
       </ul>
     </div>  
 
@@ -71,7 +71,7 @@ server</p>
 <dl class="class">
 <dt id="lazorse::LazyApp">
 <em class="property">class </em><tt class="descname">LazyApp</tt><a class="headerlink" href="#lazorse::LazyApp" title="Permalink to this definition">¶</a></dt>
-<dd><p>The main application class, groups together five connect middleware:</p>
+<dd><p>The main application class groups together five connect middleware:</p>
 <blockquote>
 <div><dl class="docutils">
 <dt><a class="reference internal" href="#lazorse::LazyApp.findRoute" title="lazorse::LazyApp.findRoute"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.findRoute</span></tt></a></dt>
@@ -139,6 +139,8 @@ parameter should be an object that maps parameter names to coercion functions.</
 <em class="property">method </em><tt class="descname">LazyApp.error</tt><big>(</big><em>errType</em>, <em>cb</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.error" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register an error type with the app. The callback wlll be called by
 <tt class="docutils literal"><span class="pre">&#64;errorHandler</span></tt> when an error of this type is encountered.</p>
+<p>Note that this <em>requires</em> named functions, so in coffeescript this means
+using classes.</p>
 <p>Additionally, errors of this type will be available to the &#64;error helper in
 handler/coercion callback by it&#8217;s stringified name.</p>
 <p>See <a class="reference internal" href="guide.html#named-errors"><em>named errors</em></a> in the guide for an example.</p>
@@ -297,7 +299,7 @@ names with variable names.</p>
         <li class="right" >
           <a href="guide.html" title="Guide"
              >previous</a> |</li>
-        <li><a href="index.html">Lazorse 0.4.0 documentation</a> &raquo;</li> 
+        <li><a href="index.html">Lazorse 0.4.3 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
