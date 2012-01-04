@@ -322,7 +322,6 @@ class LazyApp
   ###
   handleErrors: (err, req, res, next) ->
     errName = err.constructor.name
-    console.log err
     if @errorHandlers[errName]?
       @errorHandlers[errName](err, req, res, next)
     else if @passErrors and not (err.code and err.message)
