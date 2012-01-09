@@ -72,7 +72,9 @@ class LazyApp
     @errorHandlers[name] = handler for name, handler of errors.handlers
 
     # handleErrors must be manually rebound to preserve it's arity.
-    @handleErrors = @handleErrors.bind @
+    # Furthermore, the Function.bind in node ~0.4.12 doesn't preserve arity
+    _handleErrors = @handleErrors
+    @handleErrors = (err, req, res, next) -> _handleErrors.call app, err, req, res, next
 
     @passErrors = false
     @helpers =
