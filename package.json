@@ -8,11 +8,12 @@
     "type": "git",
     "url": "git://github.com/BetSmartMedia/Lazorse.git"
   },
-  "main": "./lib/lazorse",
+  "main": "lib/lazorse",
   "files": [
-    "./lib",
-    "./examples",
-    "./README.md"
+    "lib",
+    "examples",
+    "test",
+    "README.md"
   ],
   "engines": {
     "node": ">=0.4.0"
