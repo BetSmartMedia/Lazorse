@@ -28,4 +28,4 @@ What's the deal with the name?
 While it *could* be viewed as a portmentaeu of Lazy and Resource, I prefer to
 think of it as horses with lasers.
 
-![laser horse](http://substack.net/images/lazorse.png)
+.. image:: http://substack.net/images/lazorse.png
