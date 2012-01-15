@@ -2,7 +2,7 @@ Lazorse!
 ========
 
 Lazorse is a web-framework with a strong emphasis on extensibility and
-seperation of various concerns into independant middleware layers.
+separation of various concerns into independant middleware layers.
 
 It includes middleware to route requests, coerce parameters, dispatch to handlers,
 and render a response.  
