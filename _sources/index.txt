@@ -1,3 +1,9 @@
+.. image:: _static/justlaser.png
+  :name: laser
+
+.. image:: _static/justpony.png
+  :name: pony
+
 .. include:: ../README.rst
   :end-before: Be sure to
 
