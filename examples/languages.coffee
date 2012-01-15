@@ -25,12 +25,12 @@ lazorse ->
 
   # Extend the app with a custom rendering engine
   # Uses https://github.com/visionmedia/consolidate.js
-  # and a non-standard route property ``template``
+  # and a non-standard route property ``view``
   cons = require 'consolidate'
   @render 'text/html', (req, res, next) ->
     res.setHeader 'Content-Type', 'text/html'
-    engine = req.route.template.engine or 'swig'
-    path   = req.route.template.path or req.route.shortName or 'fallback.html'
+    engine = req.route.view?.engine or 'swig'
+    path   = req.route.view?.path or req.route.shortName or 'fallback.html'
     cons[engine] path, res.data, (err, html) ->
       if err? then next err else res.end html
 
