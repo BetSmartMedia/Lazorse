@@ -159,13 +159,10 @@ class LazyApp
       if spec.shortName and @routeIndex[spec.shortName]?
         throw new Error "Duplicate short name '#{spec.shortName}'"
 
-      @_register template, spec
-
-  _register: (template, spec) ->
-    spec.template = parser.parse @_prefix + template
-    @routeIndex[spec.shortName] = spec if spec.shortName
-    for method in METHODS when handler = spec[method]
-      @routeTable[method].push spec
+      spec.template = parser.parse @_prefix + template
+      @routeIndex[spec.shortName] = spec if spec.shortName
+      for method in METHODS when handler = spec[method]
+        @routeTable[method].push spec
 
   ###
   Register one or more helper functions. The ``helpers`` parameter should be an
