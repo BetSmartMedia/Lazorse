@@ -1,12 +1,12 @@
 exports.types = {}
-exports.types.Redirect = (@location, @code=301, @message) ->
-  @message ?= "Redirecting to #{@location}"
-  Error.captureStackTrace @, exports.types.Redirect
+exports.types.Redirect = class Redirect
+  constructor: (@location, @code=302, @message) ->
+    @message ?= "Redirecting to #{@location}"
 
 exports.handlers =
   Redirect: (err, req, res, next) ->
-    res.statusCode = err.code
     res.setHeader 'Location', err.location
+    res.statusCode = err.code
     res.end err.message
 
 exports.types.NoResponseData = ->
