@@ -19,6 +19,7 @@
     "node": ">=0.4.0"
   },
   "dependencies": {
+		"coffee-script": "~1.2.0",
     "connect": "*",
     "uri-template": "*"
   },
