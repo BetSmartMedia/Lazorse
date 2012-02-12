@@ -5,6 +5,7 @@ METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 require './uri-template-matchpatch'
 errors = require './errors'
 parser = require 'uri-template'
+connect = require 'connect'
 # Used for loading example request JSON files
 {readFileSync} = require 'fs'
 
@@ -15,13 +16,13 @@ is 3000)
 ###
 module.exports = exports = (builder) ->
   app = new LazyApp builder
-  connect = require 'connect'
   server = connect.createServer()
   server.use connect.favicon()
   server.use connect.logger()
   server.use connect.bodyParser()
   server.use app
   server.listen app.port
+  server
 
 ###
 The module also exports a function that constructs an app without starting a
@@ -99,6 +100,7 @@ class LazyApp
     @routeTable[method] = [] for method in METHODS
 
     @_prefix = ''
+    @_stack = [@findRoute, @coerceParams, @dispatchHandler, @renderResponse]
 
     # Call the builder before installing default routes so it can override
     # the index and examples path.
@@ -345,22 +347,46 @@ class LazyApp
     vars
 
   ###
+  Insert one or more connect middlewares into this apps internal stack.
+
+  :param existing: The middleware that new middleware should be inserted in
+  front of.
+
+  :param new_middle: The new middleware to insert. This can be *either* one or
+  more middleware functions, *or* a string name of a connect middleware and
+  additional parameters for that middleware.
+
+  Examples::
+    
+    @before @findRoute, (req, res, next) ->
+      res.setHeader 'X-Nihilo', ''
+      next()
+
+    @before @findRoute, 'static', __dirname + '/public'
+
+  ###
+  before: (existing, new_middle...) ->
+    i = @_stack.indexOf(existing)
+    if i < 0
+      throw new Error "Middleware #{existing} does not exist in the app"
+    if typeof new_middle[0] is 'string'
+      [name, args...] = new_middle
+      if not connect[name]?
+        throw new Error "Can't find middleware by name #{name}"
+      new_middle = [ connect[name](args...) ]
+    @_stack.splice i, 0, new_middle...
+
+  ###
   Extend a connect server with the default middleware stack from this app
   ###
   extend: (server) ->
-    server.use mw for mw in [
-      @findRoute,
-      @coerceParams,
-      @dispatchHandler,
-      @renderResponse,
-      @handleErrors,
-    ]
+    server.use mw for mw in @_stack
 
   ###
   Act as a single connect middleware
   ###
   handle: (req, res, goodbyeLazorse) ->
-    stack = [@findRoute, @coerceParams, @dispatchHandler, @renderResponse]
+    stack = (mw for mw in @_stack)
     nextMiddleware = =>
       mw = stack.shift()
       return goodbyeLazorse() unless mw?
