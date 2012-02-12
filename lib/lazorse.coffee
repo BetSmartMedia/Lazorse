@@ -1,6 +1,6 @@
 # Lazorse: lazy resources, lazers, and horses.
 
-METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT']
+METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 
 require './uri-template-matchpatch'
 errors = require './errors'
