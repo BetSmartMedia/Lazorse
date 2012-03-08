@@ -1,4 +1,4 @@
-# Lazorse: lazy resources, lazers, and horses.
+# Lazorse: lazy resources, lasers, and horses.
 
 METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 
@@ -33,7 +33,7 @@ exports.app = (builder) -> new LazyApp builder
 ###
 The main application class groups together five connect middleware:
 
-  :meth:`lazorse::LazyApp.findRoute`
+  :meth:`lazorse::LazyApp.findResource`
     Finds the handler function for a request.
 
   :meth:`lazorse::LazyApp.coerceParams`
@@ -55,9 +55,9 @@ class LazyApp
   ###
   The constructor takes a `builder` function as it's sole argument. This
   function will be called in the context of the app object `before` the default
-  index and examples routes are created. The builder can change the location of
-  these routes by setting ``@indexPath`` and ``@examplePath``, or disable them
-  by setting the path to ``false``.
+  index and examples resources are created. The builder can change the location
+  of these resources by setting ``@indexPath`` and ``@examplePath``, or disable
+  them by setting the path to ``false``.
   ###
   constructor: (builder) ->
     app = @ # Needed by some of the callbacks defined here
@@ -84,7 +84,7 @@ class LazyApp
         @res.data = data
         @next()
       data: (err, data) -> return @next err if err?; @ok data
-      link: (name, ctx) -> app.routeIndex[name].template.expand(ctx or @)
+      link: (name, ctx) -> app.resourceIndex[name].template.expand(ctx or @)
       error: (name, args...) ->
         if 'function' == typeof name
           @next new name args...
@@ -94,34 +94,34 @@ class LazyApp
           @next name
 
     # Internal state
-    @routeIndex = {}
+    @resourceIndex = {}
     @coercions = {}
     @coercionDescriptions = {}
     @routeTable = {}
     @routeTable[method] = [] for method in METHODS
 
     @_prefix = ''
-    @_stack = [@findRoute, @coerceParams, @dispatchHandler, @renderResponse]
+    @_stack = [@findResource, @coerceParams, @dispatchHandler, @renderResponse]
 
-    # Call the builder before installing default routes so it can override
+    # Call the builder before installing default resources so it can override
     # the index and examples path.
-    builder.call @ if 'function' == typeof builder
+    builder.call @ if 'function' is typeof builder
 
     indexPath     = @indexPath     ? '/'
     examplePath   = @examplePath   ? '/examples'
     parameterPath = @parameterPath ? '/parameters'
 
-    defaultRoutes = {}
+    defaultResources = {}
     if indexPath
-      defaultRoutes['/'] =
-        description: "Index of all routes"
+      defaultResources['/'] =
+        description: "Index of all resources"
         GET: ->
-          specs = for shortName, route of app.routeIndex
-            {template, shortName, description} = route
-            methods = (k for k of route when k in METHODS)
+          specs = for shortName, resource of app.resourceIndex
+            {template, shortName, description} = resource
+            methods = (k for k of resource when k in METHODS)
             template = String template
             spec = {shortName, description, methods, template}
-            spec.examples = "/examples/#{shortName}" if route.examples
+            spec.examples = "/examples/#{shortName}" if resource.examples
             spec
           specs.sort (a, b) ->
             [a, b] = (s.template for s in [a, b])
@@ -130,33 +130,33 @@ class LazyApp
           @ok specs
 
     if examplePath
-      defaultRoutes[examplePath+'/{shortName}'] =
-        description: "Get example requests for a route"
+      defaultResources[examplePath+'/{shortName}'] =
+        description: "Get example requests for a resource"
         GET: ->
-          unless (route = app.routeIndex[@shortName]) and route.examples
+          unless (resource = app.resourceIndex[@shortName]) and resource.examples
             return @error errors.NotFound, 'examples', @shortName
-          examples = for example in route.examples
+          examples = for example in resource.examples
             ex = method: example.method, path: @link @shortName, example.vars
             ex.body = example.body if example.body?
             ex
           @ok examples
 
     if parameterPath
-      defaultRoutes[parameterPath+'/'] = GET: -> @ok app.coercionDescriptions
-      defaultRoutes[parameterPath+'/{parameterName}'] =
+      defaultResources[parameterPath+'/'] = GET: -> @ok app.coercionDescriptions
+      defaultResources[parameterPath+'/{parameterName}'] =
         GET: ->
           unless (coercion = app.coercions[@parameterName])
             return @error errors.NotFound, 'parameters', @parameterName
           @ok app.coercionDescriptions[@parameterName]
 
 
-    @route defaultRoutes
+    @resource defaultResources
 
   ###
-  Register one or more routes. The ``specs`` object should map URI templates to
-  an object describing the route. For example::
+  Register one or more resources. The ``specs`` object should map URI templates to
+  an object describing the resource. For example::
 
-      @route '/{category}/{thing}':
+      @resource '/{category}/{thing}':
         shortName: "nameForClientsAndDocumentation"
         description: "a longer description"
         GET: -> ...
@@ -166,13 +166,13 @@ class LazyApp
           {method: 'GET', vars: {category: 'cats', thing: 'jellybean'}}
         ]
   ###
-  route: (specs) ->
+  resource: (specs) ->
     for template, spec of specs
-      if spec.shortName and @routeIndex[spec.shortName]?
+      if spec.shortName and @resourceIndex[spec.shortName]?
         throw new Error "Duplicate short name '#{spec.shortName}'"
 
       spec.template = parser.parse @_prefix + template
-      @routeIndex[spec.shortName] = spec if spec.shortName
+      @resourceIndex[spec.shortName] = spec if spec.shortName
       for method in METHODS when handler = spec[method]
         @routeTable[method].push spec
 
@@ -237,7 +237,7 @@ class LazyApp
 
   ###
   Call ``mod.include`` in the context of the app. The (optional) ``path``
-  parameter will be prefixed to all routes defined by the include.
+  parameter will be prefixed to all resources defined by the include.
   ###
   include: (path, mod) ->
     if typeof path.include == 'function'
@@ -251,22 +251,22 @@ class LazyApp
     @_prefix = restorePrefix
 
   ###
-  Find the first matching route template for the request, and assign it to
-  ``req.route``
+  Find the first matching resource template for the request, and assign it to
+  ``req.resource``
 
   `Connect middleware, remains bound to the app object.`
   ###
-  findRoute: (req, res, next) =>
+  findResource: (req, res, next) =>
     try
       i = 0
-      routes = @routeTable[req.method]
+      resources = @routeTable[req.method]
       nextHandler = (err) =>
-        return next err if err? and err != 'route'
-        r = routes[i++]
-        return next(new @errors.NotFound 'route', req.url) unless r?
+        return next err if err? and err != 'resource'
+        r = resources[i++]
+        return next(new @errors.NotFound 'resource', req.url) unless r?
         vars = r.template.match req.url
         return nextHandler() unless vars
-        req.route = r
+        req.resource = r
         req.vars = vars
         next()
       nextHandler()
@@ -298,15 +298,15 @@ class LazyApp
 
 
   ###
-  Calls the handler function for the matched route if it exists.
+  Calls the handler function for the matched resource if it exists.
 
   `Connect middleware, remains bound to the app object.`
   ###
   dispatchHandler: (req, res, next) =>
-    return next() unless req.route?
+    return next() unless req.resource?
     ctx = @buildContext req, res, next
-    # the route handler should call next()
-    req.route[req.method].call ctx, ctx
+    # the resource handler should call next()
+    req.resource[req.method].call ctx, ctx
 
   ###
   Renders the data in ``req.data`` to the client.
@@ -318,7 +318,7 @@ class LazyApp
   `Connect middleware, remains bound to the app object.`
   ###
   renderResponse: (req, res, next) =>
-    return next new @errors.NotFound if not req.route
+    return next new @errors.NotFound if not req.resource
     return next new @errors.NoResponseData if not res.data
     if req.headers.accept and [types, _] = req.headers.accept.split ';'
       for type in types.split ','
@@ -346,8 +346,8 @@ class LazyApp
       res.statusCode = err.code or 500
       message = 'string' == typeof err and err or err.message or "Internal error"
       res.data = error: message
-      # @renderer will re-error if req.route isn't set (e.g. no route matched)
-      req.route ?= true
+      # @renderer will re-error if req.resource isn't set (e.g. no resource matched)
+      req.resource ?= true
       @renderResponse req, res, next
 
   ###
@@ -373,11 +373,11 @@ class LazyApp
 
   Examples::
     
-    @before @findRoute, (req, res, next) ->
+    @before @findResource, (req, res, next) ->
       res.setHeader 'X-Nihilo', ''
       next()
 
-    @before @findRoute, 'static', __dirname + '/public'
+    @before @findResource, 'static', __dirname + '/public'
 
   ###
   before: (existing, new_middle...) ->
