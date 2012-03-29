@@ -168,7 +168,7 @@ class LazyApp
   Register one or more helper functions. The ``helpers`` parameter should be an
   object that maps helper names to callback functions.
 
-  The helpers will be made available in the context used be coercions and
+  The helpers will be made available in the context used by coercions and
   request handlers (see :meth:`lazorse::LazyApp.buildContext`). So if you
   register a helper named 'fryEgg' it will be available as ``@fryEgg``.
   ###
@@ -348,11 +348,11 @@ class LazyApp
   Insert one or more connect middlewares into this apps internal stack.
 
   :param existing: The middleware that new middleware should be inserted in
-  front of.
+    front of.
 
   :param new_middle: The new middleware to insert. This can be *either* one or
-  more middleware functions, *or* a string name of a connect middleware and
-  additional parameters for that middleware.
+    more middleware functions, *or* a string name of a connect middleware and
+    additional parameters for that middleware.
 
   Examples::
     
