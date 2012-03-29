@@ -13,10 +13,7 @@
  
 /* -- page layout ----------------------------------------------------------- */
  
-#laser, #pony {
-    float: right;
-    clear: right;
-}
+#laser, #pony { float: right; }
 
 body {
     font-family: Arial, sans-serif;
@@ -33,7 +30,7 @@ div.documentwrapper {
 }
 
 div.bodywrapper {
-    margin: 0 0 0 {{ theme_sidebarwidth|toint }}px;
+    margin: 0 0 0 260px;
 }
 
 hr {
@@ -49,7 +46,7 @@ div.body {
  
 div.footer {
     color: #555;
-    margin: 0 0 0 {{ theme_sidebarwidth|toint }}px;
+    margin: 0 0 0 260px;
     padding: 13px 0;
     text-align: center;
     font-size: 75%;
@@ -77,6 +74,7 @@ div.sphinxsidebar {
     float: none;
     border-right: 1px solid #ddd;
     margin-left: 0;
+    width: 260px;
     position: fixed;
     font-size: 0.75em;
     line-height: 1.5em;
@@ -145,7 +143,12 @@ div.sphinxsidebar li.currentsection {
     border-left: 1px solid #ddd;
     border-radius: 0.6em 0px 0px 0.6em;
 }
- 
+
+div.sphinxsidebar li.currentsection li {
+    border-bottom: 1px solid #fff;
+    border-top: 1px solid #fff;
+}
+
 div.sphinxsidebar input {
     border: 1px solid #ccc;
     font-family: sans-serif;
@@ -168,28 +171,16 @@ a:hover {
     text-decoration: underline;
 }
  
-div.body h1,
-div.body h2,
-div.body h3,
-div.body h4,
-div.body h5,
-div.body h6 {
-    font-family: Arial, sans-serif;
-    background-color: #BED4EB;
-    font-weight: normal;
-    color: #212224;
-    margin: 30px 0px 10px 0px;
-    padding: 5px 0 5px 10px;
-    text-shadow: 0px 1px 0 white
+div.body h1, div.body h2, div.body h3, div.body h4, div.body h5, div.body h6 {
+  color: #8B1A02;
+  font-family: Arial,sans-serif;
+  font-weight: normal;
+  text-shadow: 0 1px 0 #CBA39C;
 }
  
-div.body h1 { border-top: 20px solid white; margin-top: 0; font-size: 200%; }
-div.body h2 { font-size: 150%; background-color: #C8D5E3; }
-div.body h3 { font-size: 120%; background-color: #D8DEE3; }
-div.body h4 { font-size: 110%; background-color: #D8DEE3; }
-div.body h5 { font-size: 100%; background-color: #D8DEE3; }
-div.body h6 { font-size: 100%; background-color: #D8DEE3; }
- 
+div.body h1 { border-top: 20px solid white; margin-top: 0; font-size: 200%; background-color: #CAC8C6; padding: 5px 0 5px 10px; }
+div.body h2 { border-bottom: 1px solid #CAC8C6; padding: 5px 0; }
+
 a.headerlink {
     color: #c60f0f;
     font-size: 0.8em;
@@ -202,6 +193,15 @@ a.headerlink:hover {
     color: white;
 }
  
+/* Add some vertical whitespace in autodoc blocks */
+dl.class dl.attribute, dl.class dl.method {
+    margin-top: 22px;
+}
+
+dl.class dl.attribute ~ dl.attribute, dl.class dl.method  ~ dl.method {
+    margin-top: 15px;
+}
+
 div.body p, div.body dd, div.body li {
     line-height: 1.5em;
 }
