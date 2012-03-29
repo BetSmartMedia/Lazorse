@@ -13,7 +13,7 @@
  
 /* -- page layout ----------------------------------------------------------- */
  
-#laser, #pony { float: right; }
+#laser, #pony { float: right; clear: right; }
 
 body {
     font-family: Arial, sans-serif;
