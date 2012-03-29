@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>API documentation &mdash; Lazorse 0.4.5 documentation</title>
+    <title>API documentation &mdash; Lazorse 0.4.7 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.4.5',
+        VERSION:     '0.4.7',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/waypoints.min.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    <link rel="top" title="Lazorse 0.4.5 documentation" href="index.html" />
+    <link rel="top" title="Lazorse 0.4.7 documentation" href="index.html" />
     <link rel="next" title="URI Template matching" href="matching_semantics.html" />
     <link rel="prev" title="Guide" href="guide.html" /> 
   </head>
@@ -237,6 +237,40 @@ a generic 500 error.</p>
 </div></blockquote>
 <p>Because this is a delegation chain, you need to be careful not to mask out helper
 names with variable names.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="lazorse::LazyApp.before">
+<em class="property">method </em><tt class="descname">LazyApp.before</tt><big>(</big><em>existing</em>, <em>new_middle</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.before" title="Permalink to this definition">¶</a></dt>
+<dd><p>Insert one or more connect middlewares into this apps internal stack.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Param existing:</th><td class="field-body">The middleware that new middleware should be inserted in</td>
+</tr>
+</tbody>
+</table>
+<p>front of.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name" colspan="2">Param new_middle:</th></tr>
+<tr class="field-odd field"><td>&nbsp;</td><td class="field-body">The new middleware to insert. This can be <em>either</em> one or</td>
+</tr>
+</tbody>
+</table>
+<p>more middleware functions, <em>or</em> a string name of a connect middleware and
+additional parameters for that middleware.</p>
+<p>Examples:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">@before</span> <span class="nx">@findRoute</span><span class="p">,</span> <span class="nf">(req, res, next) -&gt;</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">setHeader</span> <span class="s1">&#39;X-Nihilo&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+  <span class="nx">next</span><span class="p">()</span>
+
+<span class="nx">@before</span> <span class="nx">@findRoute</span><span class="p">,</span> <span class="s1">&#39;static&#39;</span><span class="p">,</span> <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/public&#39;</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="method">
