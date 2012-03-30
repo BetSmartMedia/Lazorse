@@ -27,7 +27,8 @@
     "mocha": "~0.7.0"
   },
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+		"prepublish": "coffee prepublish.coffee"
   },
   "optionalDependencies": {}
 }
