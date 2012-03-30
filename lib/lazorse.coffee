@@ -17,8 +17,6 @@ is 3000)
 module.exports = exports = (builder) ->
   app = new LazyApp builder
   server = connect.createServer()
-  server.use connect.favicon()
-  server.use connect.logger()
   server.use connect.bodyParser()
   server.use app
   server.listen app.port
