@@ -8,7 +8,11 @@ server.use require('../lib/lazorse').app ->
     route = {}
     uri = "/#{method}me"
     route[uri] = {}
-    route[uri][method] = -> @ok "#{method}"
+    route[uri][method] = if method is 'HEAD'
+      -> @res.end()
+    else
+      -> @ok "#{method}"
+
     @route route
 
   @route '/indexed':
