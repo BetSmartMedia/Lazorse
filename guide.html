@@ -90,8 +90,8 @@ semantics on top. (<a class="reference internal" href="matching_semantics.html#u
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span> <span class="o">-&gt;</span>
   <span class="nv">greetingLookup = english: </span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s2">&quot;Salut&quot;</span>
 
-  <span class="c1"># This defines a route that accepts both GET and POST</span>
-  <span class="nx">@route</span> <span class="s2">&quot;/greeting/{language}&quot;</span><span class="o">:</span>
+  <span class="c1"># This defines a resource that accepts both GET and POST</span>
+  <span class="nx">@resource</span> <span class="s2">&quot;/greeting/{language}&quot;</span><span class="o">:</span>
     <span class="nv">description: </span><span class="s2">&quot;Per-language greetings&quot;</span>
     <span class="nv">shortName: </span><span class="s1">&#39;localGreeting&#39;</span>
     <span class="nv">GET: </span> <span class="o">-&gt;</span> <span class="nx">@ok</span> <span class="nv">greeting: </span><span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">],</span> <span class="nv">language: </span><span class="nx">@language</span>
@@ -126,9 +126,11 @@ an array that looks like this:</p>
 the matching URI template captured a parameter of the same name. This adds a
 coercion to our greeting app that will restrict the <tt class="docutils literal"><span class="pre">language</span></tt> parameter to only
 pre-defined languages:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="nx">@coerce</span> <span class="nv">language: </span><span class="nf">(language, next) -&gt;</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="nx">@coerce</span> <span class="s2">&quot;language&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">    A language to use for localized greetings. Valid values: #{Object.keys(greetingLookup).join(&#39;, &#39;)}.</span>
+<span class="s2">  &quot;&quot;&quot;</span><span class="p">,</span> <span class="nf">(language, next) -&gt;</span>
     <span class="nv">language = </span><span class="nx">language</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
-    <span class="k">if</span> <span class="nx">language</span> <span class="o">not</span> <span class="k">in</span> <span class="nx">greetings</span>
+    <span class="k">if</span> <span class="nx">language</span> <span class="o">not</span> <span class="k">in</span> <span class="nx">greetingLookup</span>
       <span class="nv">errName = </span><span class="nx">@req</span><span class="p">.</span><span class="nx">method</span> <span class="o">is</span> <span class="s1">&#39;GET&#39;</span> <span class="o">and</span> <span class="s1">&#39;NotFound&#39;</span> <span class="o">or</span> <span class="s1">&#39;InvalidParameter&#39;</span>
       <span class="nx">@error</span> <span class="nx">errName</span><span class="p">,</span> <span class="s1">&#39;language&#39;</span><span class="p">,</span> <span class="nx">language</span>
     <span class="k">else</span>
@@ -181,12 +183,12 @@ middleware in the stack. The default rendering middleware supports JSON and
 and falls back to JSON when it can&#8217;t provide it. You can easily add or override
 the renderer for a new content type like so:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="c1"># Uses https://github.com/visionmedia/consolidate.js</span>
-  <span class="c1"># and a non-standard route property ``view``</span>
+  <span class="c1"># and a non-standard resource property ``view``</span>
   <span class="nv">cons = </span><span class="nx">require</span> <span class="s1">&#39;consolidate&#39;</span>
   <span class="nx">@render</span> <span class="s1">&#39;text/html&#39;</span><span class="p">,</span> <span class="nf">(req, res, next) -&gt;</span>
     <span class="nx">res</span><span class="p">.</span><span class="nx">setHeader</span> <span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;text/html&#39;</span>
-    <span class="nv">engine = </span><span class="nx">req</span><span class="p">.</span><span class="nx">route</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">engine</span> <span class="o">or</span> <span class="s1">&#39;swig&#39;</span>
-    <span class="nv">path   = </span><span class="nx">req</span><span class="p">.</span><span class="nx">route</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">path</span> <span class="o">or</span> <span class="nx">req</span><span class="p">.</span><span class="nx">route</span><span class="p">.</span><span class="nx">shortName</span> <span class="o">or</span> <span class="s1">&#39;fallback.html&#39;</span>
+    <span class="nv">engine = </span><span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">engine</span> <span class="o">or</span> <span class="s1">&#39;swig&#39;</span>
+    <span class="nv">path   = </span><span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">path</span> <span class="o">or</span> <span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">shortName</span> <span class="o">or</span> <span class="s1">&#39;fallback.html&#39;</span>
     <span class="nx">cons</span><span class="p">[</span><span class="nx">engine</span><span class="p">]</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="nf">(err, html) -&gt;</span>
       <span class="k">if</span> <span class="nx">err</span><span class="o">?</span> <span class="k">then</span> <span class="nx">next</span> <span class="nx">err</span> <span class="k">else</span> <span class="nx">res</span><span class="p">.</span><span class="nx">end</span> <span class="nx">html</span>
 </pre></div>
@@ -219,7 +221,7 @@ you don&#8217;t need to manually import your error types if you don&#8217;t want
 <span class="s2">      Tip! me over and pour me out!</span>
 <span class="s2">    &quot;&quot;&quot;</span>
 
-  <span class="nx">@route</span> <span class="s1">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="s1">&#39;TeapotError&#39;</span>
+  <span class="nx">@resource</span> <span class="s1">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="s1">&#39;TeapotError&#39;</span>
 </pre></div>
 </div>
 <p>Now our handlers (and coercions) can return 418s easily, no matter what file they
@@ -234,8 +236,8 @@ like:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span> <span class="o">-&gt;</span>
   <span class="nv">greetingLookup = english: </span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s2">&quot;Salut&quot;</span>
 
-  <span class="c1"># This defines a route that accepts both GET and POST</span>
-  <span class="nx">@route</span> <span class="s2">&quot;/greeting/{language}&quot;</span><span class="o">:</span>
+  <span class="c1"># This defines a resource that accepts both GET and POST</span>
+  <span class="nx">@resource</span> <span class="s2">&quot;/greeting/{language}&quot;</span><span class="o">:</span>
     <span class="nv">description: </span><span class="s2">&quot;Per-language greetings&quot;</span>
     <span class="nv">shortName: </span><span class="s1">&#39;localGreeting&#39;</span>
     <span class="nv">GET: </span> <span class="o">-&gt;</span> <span class="nx">@ok</span> <span class="nv">greeting: </span><span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">],</span> <span class="nv">language: </span><span class="nx">@language</span>
