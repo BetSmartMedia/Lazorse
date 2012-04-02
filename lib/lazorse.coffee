@@ -17,6 +17,8 @@ is 3000)
 module.exports = exports = (builder) ->
   app = new LazyApp builder
   server = connect.createServer()
+  server.use connect.favicon()
+  server.use connect.logger()
   server.use connect.bodyParser()
   server.use app
   server.listen app.port
@@ -94,6 +96,7 @@ class LazyApp
     # Internal state
     @routeIndex = {}
     @coercions = {}
+    @coercionDescriptions = {}
     @routeTable = {}
     @routeTable[method] = [] for method in METHODS
 
@@ -104,8 +107,9 @@ class LazyApp
     # the index and examples path.
     builder.call @ if 'function' == typeof builder
 
-    indexPath = @indexPath ? '/'
-    examplePath = @examplePath ? '/examples'
+    indexPath     = @indexPath     ? '/'
+    examplePath   = @examplePath   ? '/examples'
+    parameterPath = @parameterPath ? '/parameters'
 
     defaultRoutes = {}
     if indexPath
@@ -131,12 +135,20 @@ class LazyApp
         GET: ->
           unless (route = app.routeIndex[@shortName]) and route.examples
             return @error errors.NotFound, 'examples', @shortName
-          needsResponse = []
           examples = for example in route.examples
             ex = method: example.method, path: @link @shortName, example.vars
             ex.body = example.body if example.body?
             ex
           @ok examples
+
+    if parameterPath
+      defaultRoutes[parameterPath+'/'] = GET: -> @ok app.coercionDescriptions
+      defaultRoutes[parameterPath+'/{parameterName}'] =
+        GET: ->
+          unless (coercion = app.coercions[@parameterName])
+            return @error errors.NotFound, 'parameters', @parameterName
+          @ok app.coercionDescriptions[@parameterName]
+
 
     @route defaultRoutes
 
@@ -177,15 +189,20 @@ class LazyApp
       @helpers[name] = helper
 
   ###
-  Register one or more template parameter coercions with the app. The coercions
-  parameter should be an object that maps parameter names to coercion functions.
+  Register a new template parameter coercion with the app. 
+
+  :param name: The name of the template parameter to be coerced.
+  :param description: A documentation string for the parameter name.
+  :param coercion: a ``(value, next) -> next(err, coercedValue)`` function that
+    will be called with ``this`` set to the request context. If not given, the
+    value will be passed through unchanged (useful for documentation purposes).
 
   See :rst:ref:`coercions` in the guide for an example.
   ###
-  coerce: (coercions) ->
-    for name, cb of coercions
-      throw new Error "Duplicate coercion name: #{name}" if @coercions[name]?
-      @coercions[name] = cb
+  coerce: (name, description, coercion) ->
+    throw new Error "Duplicate coercion name: #{name}" if @coercions[name]?
+    @coercionDescriptions[name] = description
+    @coercions[name] = coercion or (v, n) -> n(null, v)
 
   ###
   Register an error type with the app. The callback wlll be called by
@@ -348,11 +365,11 @@ class LazyApp
   Insert one or more connect middlewares into this apps internal stack.
 
   :param existing: The middleware that new middleware should be inserted in
-    front of.
+  front of.
 
   :param new_middle: The new middleware to insert. This can be *either* one or
-    more middleware functions, *or* a string name of a connect middleware and
-    additional parameters for that middleware.
+  more middleware functions, *or* a string name of a connect middleware and
+  additional parameters for that middleware.
 
   Examples::
     
