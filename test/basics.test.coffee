@@ -5,27 +5,27 @@ assert = require 'assert'
 # Test server
 server.use require('../lib/lazorse').app ->
   for method in client.METHODS
-    route = {}
+    resource = {}
     uri = "/#{method}me"
-    route[uri] = {}
-    route[uri][method] = if method is 'HEAD'
+    resource[uri] = {}
+    resource[uri][method] = if method is 'HEAD'
       -> @res.end()
     else
       -> @ok "#{method}"
 
-    @route route
+    @resource resource
 
-  @route '/indexed':
+  @resource '/indexed':
     shortName: 'discoverableResource'
     GET: -> @ok 'found it'
 
-  @route '/404':
+  @resource '/404':
     GET: -> @error 'NotFound', 'string error name', 'works'
 
-  @route '/500':
+  @resource '/500':
     GET: -> @next new Error "I'm an unknown error type"
 
-  @route '/422':
+  @resource '/422':
     GET: -> @error 'InvalidParameter', 'bad param'
 
 # Tests
@@ -45,8 +45,8 @@ describe "A basic app", ->
       done()
     
 
-  it "will return 404 if no route matches", (done) ->
-    client.GET "/the-nonexistant-route", (res) ->
+  it "will return 404 if no resource matches", (done) ->
+    client.GET "/the-nonexistant-resource", (res) ->
       assert.equal res.statusCode, 404
       done()
    

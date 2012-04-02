@@ -5,7 +5,7 @@ assert = require('assert')
 errors = require '../lib/errors'
 
 server.use require('../lib/lazorse').app ->
-  @route '/frob/{foozle}/{whatsit}':
+  @resource '/frob/{foozle}/{whatsit}':
     GET: -> @error "teapot"
     shortName: "frob"
     examples: [

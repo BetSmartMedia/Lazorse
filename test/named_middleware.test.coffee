@@ -4,7 +4,7 @@ assert = require 'assert'
 describe "Passing a string to @before", ->
   server = require('../lib/lazorse') ->
     @port = 0
-    @before @findRoute, 'static', __dirname + '/static'
+    @before @findResource, 'static', __dirname + '/static'
 
   before -> client.usePort server.address().port
   after  -> server.close()

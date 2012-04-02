@@ -13,13 +13,13 @@ CoffeepotError = ->
   Error.captureStackTrace @, TeapotError
 
 server.use require('../lib/lazorse').app ->
-  @route '/byNameUnregistered':
+  @resource '/byNameUnregistered':
     GET: -> @error "TeapotError"
 
-  @route '/byNameRegistered':
+  @resource '/byNameRegistered':
     GET: -> @error "TeapotError"
 
-  @route '/usingConstructor':
+  @resource '/usingConstructor':
     GET: -> @error TeapotError
 
 describe "An app that uses custom errors", ->

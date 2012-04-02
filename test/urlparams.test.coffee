@@ -3,13 +3,13 @@ server = require('connect').createServer()
 assert = require('assert')
 
 ###
-Each of these routes that will be added to the test server, with a handler that
+Each of these resources that will be added to the test server, with a handler that
 returns the matched vars. 
 
-Then each path below the route is requested and the client asserts that what was
+Then each path below the resource is requested and the client asserts that what was
 matched what we expected.
 ###
-testRoutes =
+testResources =
   '/simple/{param}': {
     '/simple/blah': {param: 'blah'}
   }
@@ -32,13 +32,13 @@ testRoutes =
     '/qs?param=one,two,three': {param: 'one,two,three'}
   }
 
-# The handler to be used by all routes above
+# The handler to be used by all resources above
 echo = -> @ok @req.vars
 
 server.use require('../lib/lazorse').app ->
-  routes = {}
-  routes[tpl] = {GET: echo} for tpl of testRoutes
-  @route routes
+  resources = {}
+  resources[tpl] = {GET: echo} for tpl of testResources
+  @resource resources
 
 describe "With URL parameters", ->
   before (start) ->
@@ -48,7 +48,7 @@ describe "With URL parameters", ->
 
   after -> server.close()
 
-  for _, exp of testRoutes
+  for _, exp of testResources
     do (exp) ->
       for path, vars of exp
         do (path, vars) ->

@@ -8,7 +8,7 @@ server = require('connect').createServer()
 assert = require 'assert'
 
 describe "An app with @before middleware", ->
-  stack = ['findRoute', 'coerceParams', 'dispatchHandler', 'renderResponse']
+  stack = ['findResource', 'coerceParams', 'dispatchHandler', 'renderResponse']
   server = require('../lib/lazorse') ->
     @port = 0
 
@@ -16,8 +16,8 @@ describe "An app with @before middleware", ->
 
     # Assert various attributes of the req/res state before each middleware
     extraAsserts =
-      findRoute: (req, res) -> assert.ok not req.route
-      coerceParams: (req, res) -> assert.ok req.route; assert.deepEqual req.vars, {}
+      findResource: (req, res) -> assert.ok not req.resource
+      coerceParams: (req, res) -> assert.ok req.resource; assert.deepEqual req.vars, {}
       renderResponse: (req, res) -> assert.equal res.data, response_data
 
     for mw, i in stack then do (i, mw) =>
@@ -34,7 +34,7 @@ describe "An app with @before middleware", ->
       res.setHeader 'cool', res.allLayers.join ','
       next()
 
-    @route '/ok': GET: -> @ok response_data
+    @resource '/ok': GET: -> @ok response_data
   before -> client.usePort server.address().port
   after  -> server.close()
 
