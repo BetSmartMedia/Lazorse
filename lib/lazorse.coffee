@@ -389,6 +389,13 @@ class LazyApp
     i = @_stack.indexOf(existing)
     if i < 0
       throw new Error "Middleware #{existing} does not exist in the app"
+
+    # If we receive an array, add each sub-array in order
+    if Array.isArray(new_middle[0])
+      for nm in new_middle[0]
+        @before existing, nm...
+      return
+
     if typeof new_middle[0] is 'string'
       [name, args...] = new_middle
       if not connect[name]?
