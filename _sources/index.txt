@@ -14,6 +14,7 @@ Contents
 
   guide
   api
+  upgrading
   matching_semantics
 
 Indices and tables
