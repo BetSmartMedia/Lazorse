@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Guide &mdash; Lazorse 0.5.0 documentation</title>
+    <title>Guide &mdash; Lazorse 0.5.1 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.0',
+        VERSION:     '0.5.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/waypoints.min.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    <link rel="top" title="Lazorse 0.5.0 documentation" href="index.html" />
+    <link rel="top" title="Lazorse 0.5.1 documentation" href="index.html" />
     <link rel="next" title="API documentation" href="api.html" />
     <link rel="prev" title="Lazorse!" href="index.html" /> 
   </head>
@@ -127,10 +127,11 @@ the matching URI template captured a parameter of the same name. This adds a
 coercion to our greeting app that will restrict the <tt class="docutils literal"><span class="pre">language</span></tt> parameter to only
 pre-defined languages:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="nx">@coerce</span> <span class="s2">&quot;language&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    A language to use for localized greetings. Valid values: #{Object.keys(greetingLookup).join(&#39;, &#39;)}.</span>
+<span class="s2">    A language to use for localized greetings.</span>
+<span class="s2">    Valid values: #{Object.keys(greetingLookup).join(&#39;, &#39;)}.</span>
 <span class="s2">  &quot;&quot;&quot;</span><span class="p">,</span> <span class="nf">(language, next) -&gt;</span>
     <span class="nv">language = </span><span class="nx">language</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
-    <span class="k">if</span> <span class="nx">language</span> <span class="o">not</span> <span class="k">in</span> <span class="nx">greetingLookup</span>
+    <span class="nx">unless</span> <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">language</span><span class="p">]</span>
       <span class="nv">errName = </span><span class="nx">@req</span><span class="p">.</span><span class="nx">method</span> <span class="o">is</span> <span class="s1">&#39;GET&#39;</span> <span class="o">and</span> <span class="s1">&#39;NotFound&#39;</span> <span class="o">or</span> <span class="s1">&#39;InvalidParameter&#39;</span>
       <span class="nx">@error</span> <span class="nx">errName</span><span class="p">,</span> <span class="s1">&#39;language&#39;</span><span class="p">,</span> <span class="nx">language</span>
     <span class="k">else</span>
@@ -211,9 +212,13 @@ coercions to help with returning errors. It can look up errors by name so that
 you don&#8217;t need to manually import your error types if you don&#8217;t want to.</p>
 <p>To register a new error type with a callback, we use the
 <a class="reference internal" href="api.html#lazorse::LazyApp.error" title="lazorse::LazyApp.error"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.error</span></tt></a> method:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="nv">TeapotError = </span><span class="o">-&gt;</span> <span class="vi">@code = </span><span class="mi">418</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="c1"># named function.</span>
+  <span class="k">class</span> <span class="nx">TeapotError</span>
+    <span class="nv">constructor: </span><span class="o">-&gt;</span>
 
+  <span class="c1"># and register it with the app</span>
   <span class="nx">@error</span> <span class="nx">TeapotError</span><span class="p">,</span> <span class="nf">(err, req, res, next) -&gt;</span>
+    <span class="nv">res.statusCode = </span><span class="mi">418</span>
     <span class="nx">res</span><span class="p">.</span><span class="nx">end</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">      I&#39;m a little teapot, short and stout.</span>
 <span class="s2">      Here is my handle, here is my spout.</span>
@@ -221,7 +226,11 @@ you don&#8217;t need to manually import your error types if you don&#8217;t want
 <span class="s2">      Tip! me over and pour me out!</span>
 <span class="s2">    &quot;&quot;&quot;</span>
 
+<span class="o">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> <span class="nx">HEAD</span>
   <span class="nx">@resource</span> <span class="s1">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="s1">&#39;TeapotError&#39;</span>
+<span class="o">=======</span>
+  <span class="nx">@resource</span> <span class="s1">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="k">new</span> <span class="nx">TeapotError</span>
+<span class="o">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span> <span class="nx">b3a39c4</span><span class="p">...</span> <span class="nx">Update</span> <span class="nx">example</span> <span class="nx">app</span>
 </pre></div>
 </div>
 <p>Now our handlers (and coercions) can return 418s easily, no matter what file they
