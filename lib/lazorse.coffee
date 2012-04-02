@@ -121,7 +121,8 @@ class LazyApp
             methods = (k for k of resource when k in METHODS)
             template = String template
             spec = {shortName, description, methods, template}
-            spec.examples = "/examples/#{shortName}" if resource.examples
+            if resource.examples and examplePath
+              spec.examples = @link 'exampleRequests', {shortName}
             spec
           specs.sort (a, b) ->
             [a, b] = (s.template for s in [a, b])
@@ -131,11 +132,13 @@ class LazyApp
 
     if examplePath
       defaultResources[examplePath+'/{shortName}'] =
-        shortname: 'exampleRequests'
+        shortName: 'exampleRequests'
         description: "Example requests for a named resource"
         GET: ->
-          unless (resource = app.resourceIndex[@shortName]) and resource.examples
-            return @error errors.NotFound, 'examples', @shortName
+          unless resource = app.resourceIndex[@shortName]
+            return @error 'NotFound', 'resource', @shortName
+          unless resource.examples
+            return @error 'NotFound', 'Examples for resource', @shortName
           examples = for example in resource.examples
             ex = method: example.method, path: @link @shortName, example.vars
             ex.body = example.body if example.body?
@@ -145,13 +148,12 @@ class LazyApp
     if parameterPath
       defaultResources[parameterPath+'/'] = GET: -> @ok app.coercionDescriptions
       defaultResources[parameterPath+'/{parameterName}'] =
-        shortname: 'parameterDocumentation'
+        shortName: 'parameterDocumentation'
         description: "The documentation for a specific template parameter."
         GET: ->
           unless (coercion = app.coercions[@parameterName])
-            return @error errors.NotFound, 'parameters', @parameterName
+            return @error 'NotFound', 'parameters', @parameterName
           @ok app.coercionDescriptions[@parameterName]
-
 
     @resource defaultResources
 

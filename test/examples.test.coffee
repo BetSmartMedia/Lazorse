@@ -34,7 +34,9 @@ describe "An app with examples", ->
   it 'has a link to /frob/examples in the index', (done) ->
     client.GET '/', (res, resources) ->
       assert.equal res.statusCode, 200
-      assert.equal resources[0].examples, '/examples/frob'
+      resource = null
+      resources.some (r) -> r.shortName is 'frob' and resource = r
+      assert.equal resource?.examples, '/examples/frob'
       done()
 
   it 'returns expanded paths in the examples', (done) ->

@@ -37,11 +37,11 @@ describe "A basic app", ->
 
   after -> server.close()
 
-  it "has an index with one resource", (done) ->
+  it "has an index with three resources", (done) ->
     client.GET '/', (res, resources) ->
       assert.equal res.statusCode, 200
-      assert.equal resources.length, 1
-      assert.equal resources[0].shortName, 'discoverableResource'
+      assert.equal resources.length, 3
+      assert 'discoverableResource' in (r.shortName for r in resources)
       done()
     
 
