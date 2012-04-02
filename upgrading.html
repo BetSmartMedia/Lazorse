@@ -1,0 +1,82 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Upgrading from earlier versions &mdash; Lazorse 0.5.0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/basic.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bsm.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.5.0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/waypoints.min.js"></script>
+    <script type="text/javascript" src="_static/sidebar.js"></script>
+    <link rel="top" title="Lazorse 0.5.0 documentation" href="index.html" /> 
+  </head>
+  <body>  
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Project Links</h3>
+<ul>
+
+<li><a href="index.html">Documentation Index</a></li>
+<li><a href="http://github.com/BetSmartMedia/Lazorse">Source on Github</a></li>
+<li><a href="http://github.com/BetSmartMedia/Lazorse/tree/master/examples">Example Apps</a></li>
+
+</ul><h3>Brought to you by:</h3>
+<p class="logo"><a href="index.html">
+  <img class="logo" src="_static/logo.png" alt="Logo"/>
+</a></p>
+        </div>
+      </div> 
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="upgrading-from-earlier-versions">
+<h1>Upgrading from earlier versions<a class="headerlink" href="#upgrading-from-earlier-versions" title="Permalink to this headline">¶</a></h1>
+<p>Version 0.5 introduces the following backwards-incompatible API changes:</p>
+<blockquote>
+<div><ul class="simple">
+<li><tt class="docutils literal"><span class="pre">&#64;route</span></tt> has been renamed to <tt class="docutils literal"><span class="pre">&#64;resource</span></tt> but otherwise behaves the
+same as before. Additionally, <tt class="docutils literal"><span class="pre">&#64;routeIndex</span></tt> has been renamed to
+<tt class="docutils literal"><span class="pre">&#64;resourceIndex</span></tt>, and <tt class="docutils literal"><span class="pre">&#64;routingTable</span></tt> has been renamed to <tt class="docutils literal"><span class="pre">&#64;routes</span></tt></li>
+<li><tt class="docutils literal"><span class="pre">&#64;coerce</span></tt> now takes three parameters (a template parameter name,
+description, and the coercion function), instead of an object mapping
+template parameter names to coercion functions.</li>
+<li>Another default resource has been added to expose this documentation.</li>
+<li>The example requests resource and parameter documentation resource are both
+named, and therefore show up in the resource index.</li>
+</ul>
+</div></blockquote>
+</div>
+
+
+          </div>
+        </div>
+      </div> 
+      <div class="clearer"></div>
+    </div> 
+    <div class="footer">
+        &copy; Copyright 2011, Stephen Sugden, Judd Vinet.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+    </div>
+  </body>
+</html>
