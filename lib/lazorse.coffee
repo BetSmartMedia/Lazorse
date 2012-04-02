@@ -97,8 +97,8 @@ class LazyApp
     @resourceIndex = {}
     @coercions = {}
     @coercionDescriptions = {}
-    @routeTable = {}
-    @routeTable[method] = [] for method in METHODS
+    @routes = {}
+    @routes[method] = [] for method in METHODS
 
     @_prefix = ''
     @_stack = [@findResource, @coerceParams, @dispatchHandler, @renderResponse]
@@ -131,7 +131,8 @@ class LazyApp
 
     if examplePath
       defaultResources[examplePath+'/{shortName}'] =
-        description: "Get example requests for a resource"
+        shortname: 'exampleRequests'
+        description: "Example requests for a named resource"
         GET: ->
           unless (resource = app.resourceIndex[@shortName]) and resource.examples
             return @error errors.NotFound, 'examples', @shortName
@@ -144,6 +145,8 @@ class LazyApp
     if parameterPath
       defaultResources[parameterPath+'/'] = GET: -> @ok app.coercionDescriptions
       defaultResources[parameterPath+'/{parameterName}'] =
+        shortname: 'parameterDocumentation'
+        description: "The documentation for a specific template parameter."
         GET: ->
           unless (coercion = app.coercions[@parameterName])
             return @error errors.NotFound, 'parameters', @parameterName
@@ -174,7 +177,7 @@ class LazyApp
       spec.template = parser.parse @_prefix + template
       @resourceIndex[spec.shortName] = spec if spec.shortName
       for method in METHODS when handler = spec[method]
-        @routeTable[method].push spec
+        @routes[method].push spec
 
   ###
   Register one or more helper functions. The ``helpers`` parameter should be an
@@ -259,7 +262,7 @@ class LazyApp
   findResource: (req, res, next) =>
     try
       i = 0
-      resources = @routeTable[req.method]
+      resources = @routes[req.method]
       nextHandler = (err) =>
         return next err if err? and err != 'resource'
         r = resources[i++]
