@@ -2,8 +2,8 @@ lazorse = require '../'
 lazorse ->
   greetingLookup = english: "Hi", french: "Salut"
 
-  # This defines a route that accepts both GET and POST
-  @route "/greeting/{language}":
+  # This defines a resource that accepts both GET and POST
+  @resource "/greeting/{language}":
     description: "Per-language greetings"
     shortName: 'localGreeting'
     GET:  -> @ok greeting: greetingLookup[@language], language: @language
@@ -15,9 +15,11 @@ lazorse ->
 
   # Define a coercion that restricts input languages to the
   # ones we have pre-defined
-  @coerce language: (language, next) ->
+  @coerce "language", """
+    A language to use for localized greetings. Valid values: #{Object.keys(greetingLookup).join(', ')}.
+  """, (language, next) ->
     language = language.toLowerCase()
-    if language not in greetings
+    if language not in greetingLookup
       errName = @req.method is 'GET' and 'NotFound' or 'InvalidParameter'
       @error errName, 'language', language
     else
@@ -25,12 +27,12 @@ lazorse ->
 
   # Extend the app with a custom rendering engine
   # Uses https://github.com/visionmedia/consolidate.js
-  # and a non-standard route property ``view``
+  # and a non-standard resource property ``view``
   cons = require 'consolidate'
   @render 'text/html', (req, res, next) ->
     res.setHeader 'Content-Type', 'text/html'
-    engine = req.route.view?.engine or 'swig'
-    path   = req.route.view?.path or req.route.shortName or 'fallback.html'
+    engine = req.resource.view?.engine or 'swig'
+    path   = req.resource.view?.path or req.resource.shortName or 'fallback.html'
     cons[engine] path, res.data, (err, html) ->
       if err? then next err else res.end html
 
@@ -45,4 +47,4 @@ lazorse ->
       Tip! me over and pour me out!
     """
 
-  @route '/teapot': GET: -> @error 'TeapotError'
+  @resource '/teapot': GET: -> @error 'TeapotError'
