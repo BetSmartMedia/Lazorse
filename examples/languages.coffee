@@ -16,10 +16,11 @@ lazorse ->
   # Define a coercion that restricts input languages to the
   # ones we have pre-defined
   @coerce "language", """
-    A language to use for localized greetings. Valid values: #{Object.keys(greetingLookup).join(', ')}.
+    A language to use for localized greetings.
+    Valid values: #{Object.keys(greetingLookup).join(', ')}.
   """, (language, next) ->
     language = language.toLowerCase()
-    if language not in greetingLookup
+    unless greetingLookup[language]
       errName = @req.method is 'GET' and 'NotFound' or 'InvalidParameter'
       @error errName, 'language', language
     else
@@ -36,10 +37,14 @@ lazorse ->
     cons[engine] path, res.data, (err, html) ->
       if err? then next err else res.end html
 
-  # Define a custom error type and register it with the app
-  TeapotError = -> @code = 418
+  # Define a custom error type, we must use a class in CoffeeScript to get a
+  # named function.
+  class TeapotError
+    constructor: ->
 
+  # and register it with the app
   @error TeapotError, (err, req, res, next) ->
+    res.statusCode = 418
     res.end """
       I'm a little teapot, short and stout.
       Here is my handle, here is my spout.
@@ -47,4 +52,8 @@ lazorse ->
       Tip! me over and pour me out!
     """
 
+<<<<<<< HEAD
   @resource '/teapot': GET: -> @error 'TeapotError'
+=======
+  @resource '/teapot': GET: -> @error new TeapotError
+>>>>>>> b3a39c4... Update example app
