@@ -1,5 +1,5 @@
 # Patch in .match methods to the uri-template Template and Expression prototypes
-{Template, Expression} = require 'uri-template/lib/classes'
+{Template, SimpleExpression} = require 'uri-template/lib/classes'
 
 queryStringOps = ['?', '&']
 
@@ -9,7 +9,7 @@ Template::match = (input) ->
     input = input.substring m[0].length
   vars = {}
   for expr in @expressions
-    inQS = expr.op.first in queryStringOps
+    inQS = expr.first in queryStringOps
     remaining = expr.match input, vars
     if remaining is null
       return false
@@ -27,17 +27,17 @@ Template::match = (input) ->
 #   * false if the match failed 
 #   * null if the enclosing template should be forced to fail as well
 #   * the remaining input if the match succeeds
-Expression::match = (input, vars) ->
+SimpleExpression::match = (input, vars) ->
   len = 0 # The total length of matched input
-  inQS = @op.first in queryStringOps
+  inQS = @first in queryStringOps
   if not inQS
     [input, qs] = input.split '?'
     qs = if qs then '?'+qs else ''
   else
     qs = ''
 
-  if @op.first
-    return false unless input.substring(0,1) is @op.first
+  if @first
+    return false unless input.substring(0,1) is @first
     input = input.substring 1
     len++
 
@@ -52,8 +52,8 @@ Expression::match = (input, vars) ->
   i = 0
   named = {}
   ordered = []
-  for part in matchable.split @op.sep
-    if part.match(/\//) and @op.allow isnt 'U+R'
+  for part in matchable.split @sep
+    if part.match(/\//) and @allow isnt 'U+R'
       return null
     [n, v] = part.split '='
     if not v?
@@ -74,6 +74,8 @@ Expression::match = (input, vars) ->
       else
         v = ordered.shift()
     return false unless v or inQS
+    v.typeName = p.extensions if p.extensions
     vars[p.name] = v or []
   remaining = input.substring len
   remaining + qs
+
