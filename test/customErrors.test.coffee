@@ -7,11 +7,6 @@ TeapotError = ->
   @message = "I'm a teapot"
   Error.captureStackTrace @, TeapotError
 
-CoffeepotError = ->
-  @code = 418
-  @message = "I'm a coffeepot"
-  Error.captureStackTrace @, TeapotError
-
 server = lazorse ->
   @port = 0
   @resource '/byNameUnregistered':
@@ -36,7 +31,6 @@ describe "An app that uses custom errors", ->
     client.GET '/byNameRegistered', (res) ->
       assert.equal res.statusCode, 500
       done()
-
 
   it 'treats functions as constructors regardless of registration', (done) ->
     client.GET '/usingConstructor', (res) ->

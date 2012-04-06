@@ -5,7 +5,7 @@ assert = require 'assert'
 describe "Passing a string to @before", ->
   server = lazorse ->
     @port = 0
-    @before @findResource, 'static', __dirname + '/static'
+    @before @findResource, 'static', "#{__dirname}/static"
 
   before -> client.usePort server.address().port
   after  -> server.close()

@@ -52,3 +52,6 @@ describe 'A URI template', ->
   withTemplate '/q{?params*}'
     '/q?a=ok&b=neat&c': {params: {a: 'ok', b: 'neat', c: true}}
     '/q?a=1&b=2': {params: {a: '1', b: '2'}}
+
+  withTemplate '/{a(typeC)}'
+    '/ok': {a: 'ok'}

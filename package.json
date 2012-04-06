@@ -8,7 +8,7 @@
     "type": "git",
     "url": "git://github.com/BetSmartMedia/Lazorse.git"
   },
-  "main": "lib/lazorse",
+  "main": "lazorse",
   "files": [
     "lib",
     "examples",

@@ -2,8 +2,8 @@
 
 METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 
-require './uri-template-matchpatch'
-errors = require './errors'
+require './lib/uri-template-matchpatch'
+errors = require './lib/errors'
 parser = require 'uri-template'
 connect = require 'connect'
 # Used for loading example request JSON files
@@ -64,7 +64,7 @@ class LazyApp
     # Defaults
     @port = 3000
     @renderers = {}
-    @renderers[type] = func for type, func of require './render'
+    @renderers[type] = func for type, func of require './lib/render'
 
     @errors = {}
     @errorHandlers = {}
@@ -268,10 +268,11 @@ class LazyApp
         return next err if err? and err != 'resource'
         r = resources[i++]
         return next(new @errors.NotFound 'resource', req.url) unless r?
-        vars = r.template.match req.url
+        {vars, aliases} = r.template.match req.url
         return nextHandler() unless vars
         req.resource = r
         req.vars = vars
+        req.aliases = aliases
         next()
       nextHandler()
     catch err
@@ -284,18 +285,23 @@ class LazyApp
   ###
   coerceParams: (req, res, next) =>
     return next() unless req.vars
-    ctx = @buildContext req, res, next
-    varNames = (k for k in Object.keys req.vars when @coercions[k]?)
-    return next() unless varNames.length
-    varNames.sort (a, b) -> req.url.indexOf(a) - req.url.indexOf(b)
+    toCoerce = []
+    for name, value of req.vars
+      if coercion = @coercions[req.aliases[name] or name]
+        toCoerce.push [name, value, coercion]
+    console.log toCoerce
+
+    return next() unless toCoerce.length
+
+    toCoerce.sort (a, b) -> req.url.indexOf(a[0]) - req.url.indexOf(b[0])
     i = 0
-    nextCoercion = =>
-      name = varNames[i++]
-      return next() unless name?
-      coercion = @coercions[name]
-      coercion.call ctx, req.vars[name], (e, newValue) ->
+    ctx = @buildContext req, res, next
+    nextCoercion = ->
+      nvc = toCoerce[i++]
+      return next() unless nvc
+      [name, value, coercion] =  nvc
+      coercion.call ctx, value, (e, newValue) ->
         return next e if e?
-        #if e == 'drop' then delete req.vars[name] else
         req.vars[name] = newValue
         nextCoercion()
     nextCoercion()

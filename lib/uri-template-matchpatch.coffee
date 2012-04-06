@@ -1,5 +1,12 @@
 # Patch in .match methods to the uri-template Template and Expression prototypes
-{Template, SimpleExpression} = require 'uri-template/lib/classes'
+tpl_classes = require 'uri-template/lib/classes'
+{Template, SimpleExpression} = tpl_classes
+
+old_expr = tpl_classes.expression
+tpl_classes.expression = (op, params) ->
+  for p in params when p.extended
+    console.log p
+  old_expr op, params
 
 queryStringOps = ['?', '&']
 
@@ -8,17 +15,18 @@ Template::match = (input) ->
     return false unless m = input.match '^' + @prefix
     input = input.substring m[0].length
   vars = {}
+  aliases = {}
   for expr in @expressions
     inQS = expr.first in queryStringOps
-    remaining = expr.match input, vars
+    remaining = expr.match input, vars, aliases
     if remaining is null
-      return false
+      return {}
     if remaining is false and not inQS
-      return false
+      return {}
     input = remaining
   if input and not inQS
-    return false
-  return vars
+    return {}
+  return {vars, aliases}
 
 # Matches an input string against the expression, assigning matched expression
 # parameter names as properties of the passed in `vars` object.
@@ -27,7 +35,7 @@ Template::match = (input) ->
 #   * false if the match failed 
 #   * null if the enclosing template should be forced to fail as well
 #   * the remaining input if the match succeeds
-SimpleExpression::match = (input, vars) ->
+SimpleExpression::match = (input, vars, aliases) ->
   len = 0 # The total length of matched input
   inQS = @first in queryStringOps
   if not inQS
@@ -74,7 +82,8 @@ SimpleExpression::match = (input, vars) ->
       else
         v = ordered.shift()
     return false unless v or inQS
-    v.typeName = p.extensions if p.extensions
+    if p.extended
+      aliases[p.name] = p.extended
     vars[p.name] = v or []
   remaining = input.substring len
   remaining + qs
