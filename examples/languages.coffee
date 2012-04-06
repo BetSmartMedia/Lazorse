@@ -7,7 +7,12 @@ lazorse ->
     description: "Per-language greetings"
     shortName: 'localGreeting'
     GET:  -> @ok greeting: greetingLookup[@language], language: @language
-    POST: -> greetingLookup[@language] = @req.body; @ok()
+    POST: ->
+      if @req.body?.greeting
+        greetingLookup[@language] = @req.body.greeting
+        @ok('ok')
+      else
+        @error 'InvalidParameter', 'greeting', @req.body?.greeting
     examples: [
       {method: 'GET', vars: {language: 'english'}}
       {method: 'POST', vars: {language: 'english'}, body: "howdy"}
@@ -52,8 +57,4 @@ lazorse ->
       Tip! me over and pour me out!
     """
 
-<<<<<<< HEAD
-  @resource '/teapot': GET: -> @error 'TeapotError'
-=======
   @resource '/teapot': GET: -> @error new TeapotError
->>>>>>> b3a39c4... Update example app
