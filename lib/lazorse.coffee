@@ -22,7 +22,6 @@ module.exports = exports = (builder) ->
   server.use connect.bodyParser()
   server.use app
   server.listen app.port
-  server
 
 ###
 The module also exports a function that constructs an app without starting a

@@ -1,8 +1,9 @@
+lazorse = require('../')
 client = require('./client')
 assert = require 'assert'
 
 describe "Passing a string to @before", ->
-  server = require('../lib/lazorse') ->
+  server = lazorse ->
     @port = 0
     @before @findResource, 'static', __dirname + '/static'
 

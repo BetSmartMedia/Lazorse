@@ -1,5 +1,5 @@
+lazorse = require '../'
 client = require('./client')
-server = require('connect').createServer()
 assert = require('assert')
 
 TeapotError = ->
@@ -12,7 +12,8 @@ CoffeepotError = ->
   @message = "I'm a coffeepot"
   Error.captureStackTrace @, TeapotError
 
-server.use require('../lib/lazorse').app ->
+server = lazorse ->
+  @port = 0
   @resource '/byNameUnregistered':
     GET: -> @error "TeapotError"
 
@@ -23,11 +24,7 @@ server.use require('../lib/lazorse').app ->
     GET: -> @error TeapotError
 
 describe "An app that uses custom errors", ->
-  before (start) ->
-    server.listen 0, 'localhost', ->
-      client.usePort server.address().port
-      start()
-
+  before -> client.usePort server.address().port
   after -> server.close()
 
   it "can't find errors by name when they aren't registered", (done) ->

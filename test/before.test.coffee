@@ -3,15 +3,14 @@ Tests that the @before builder function inserts new middleware into the correct
 position in the internal middleware stack
 ###
 
+lazorse = require '../'
 client = require('./client')
-server = require('connect').createServer()
 assert = require 'assert'
 
 describe "An app with @before middleware", ->
   stack = ['findResource', 'coerceParams', 'dispatchHandler', 'renderResponse']
-  server = require('../lib/lazorse') ->
+  server = lazorse ->
     @port = 0
-
     response_data = word: 'up'
 
     # Assert various attributes of the req/res state before each middleware
@@ -35,6 +34,7 @@ describe "An app with @before middleware", ->
       next()
 
     @resource '/ok': GET: -> @ok response_data
+
   before -> client.usePort server.address().port
   after  -> server.close()
 

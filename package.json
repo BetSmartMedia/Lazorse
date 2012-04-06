@@ -20,7 +20,7 @@
   },
   "dependencies": {
     "coffee-script": "~1.2.0",
-    "connect": "~1.7.0",
+    "connect": "~2.0.0",
     "uri-template": "~0.2.0"
   },
   "devDependencies": {

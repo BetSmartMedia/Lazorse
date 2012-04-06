@@ -1,5 +1,5 @@
 client = require('./client')
-server = require('connect').createServer()
+lazorse = require '../'
 assert = require('assert')
 
 ###
@@ -35,17 +35,14 @@ testResources =
 # The handler to be used by all resources above
 echo = -> @ok @req.vars
 
-server.use require('../lib/lazorse').app ->
+server = lazorse ->
+  @port = 0
   resources = {}
   resources[tpl] = {GET: echo} for tpl of testResources
   @resource resources
 
 describe "With URL parameters", ->
-  before (start) ->
-    server.listen 0, 'localhost', ->
-      client.usePort server.address().port
-      start()
-
+  before -> client.usePort server.address().port
   after -> server.close()
 
   for _, exp of testResources

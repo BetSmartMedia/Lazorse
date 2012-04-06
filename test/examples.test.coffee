@@ -1,10 +1,11 @@
+lazorse = require '../'
 client = require('./client')
-server = require('connect').createServer()
 assert = require('assert')
 
 errors = require '../lib/errors'
 
-server.use require('../lib/lazorse').app ->
+server = lazorse ->
+  @port = 0
   @resource '/frob/{foozle}/{whatsit}':
     GET: -> @error "teapot"
     shortName: "frob"
@@ -24,11 +25,7 @@ server.use require('../lib/lazorse').app ->
 
 
 describe "An app with examples", ->
-  before (start) ->
-    server.listen 0, 'localhost', ->
-      client.usePort server.address().port
-      start()
-
+  before -> client.usePort server.address().port
   after -> server.close()
 
   it 'has a link to /frob/examples in the index', (done) ->

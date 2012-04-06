@@ -1,9 +1,10 @@
+lazorse = require '../'
 client = require('./client')
-server = require('connect').createServer()
 assert = require 'assert'
 
 # Test server
-server.use require('../lib/lazorse').app ->
+server = lazorse ->
+  @port = 0
   for method in client.METHODS
     resource = {}
     uri = "/#{method}me"
@@ -30,12 +31,8 @@ server.use require('../lib/lazorse').app ->
 
 # Tests
 describe "A basic app", ->
-  before (start) ->
-    server.listen 0, 'localhost', ->
-      client.usePort server.address().port
-      start()
-
-  after -> server.close()
+  before -> client.usePort server.address().port
+  after  -> server.close()
 
   it "has an index with three resources", (done) ->
     client.GET '/', (res, resources) ->
