@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Guide &mdash; Lazorse 0.5.3 documentation</title>
+    <title>Guide &mdash; Lazorse 0.5.4 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.3',
+        VERSION:     '0.5.4',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/waypoints.min.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    <link rel="top" title="Lazorse 0.5.3 documentation" href="index.html" />
+    <link rel="top" title="Lazorse 0.5.4 documentation" href="index.html" />
     <link rel="next" title="API documentation" href="api.html" />
     <link rel="prev" title="Lazorse!" href="index.html" /> 
   </head>
@@ -95,7 +95,12 @@ semantics on top. (<a class="reference internal" href="matching_semantics.html#u
     <span class="nv">description: </span><span class="s2">&quot;Per-language greetings&quot;</span>
     <span class="nv">shortName: </span><span class="s1">&#39;localGreeting&#39;</span>
     <span class="nv">GET: </span> <span class="o">-&gt;</span> <span class="nx">@ok</span> <span class="nv">greeting: </span><span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">],</span> <span class="nv">language: </span><span class="nx">@language</span>
-    <span class="nv">POST: </span><span class="o">-&gt;</span> <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="p">;</span> <span class="nx">@ok</span><span class="p">()</span>
+    <span class="nv">POST: </span><span class="o">-&gt;</span>
+      <span class="k">if</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
+        <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">greeting</span>
+        <span class="nx">@ok</span><span class="p">(</span><span class="s1">&#39;ok&#39;</span><span class="p">)</span>
+      <span class="k">else</span>
+        <span class="nx">@error</span> <span class="s1">&#39;InvalidParameter&#39;</span><span class="p">,</span> <span class="s1">&#39;greeting&#39;</span><span class="p">,</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
 </pre></div>
 </div>
 <p>All of the keys are optional, but chances are you want to include at least one
@@ -226,11 +231,7 @@ you don&#8217;t need to manually import your error types if you don&#8217;t want
 <span class="s2">      Tip! me over and pour me out!</span>
 <span class="s2">    &quot;&quot;&quot;</span>
 
-<span class="o">&lt;&lt;&lt;&lt;&lt;&lt;&lt;</span> <span class="nx">HEAD</span>
-  <span class="nx">@resource</span> <span class="s1">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="s1">&#39;TeapotError&#39;</span>
-<span class="o">=======</span>
   <span class="nx">@resource</span> <span class="s1">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="k">new</span> <span class="nx">TeapotError</span>
-<span class="o">&gt;&gt;&gt;&gt;&gt;&gt;&gt;</span> <span class="nx">b3a39c4</span><span class="p">...</span> <span class="nx">Update</span> <span class="nx">example</span> <span class="nx">app</span>
 </pre></div>
 </div>
 <p>Now our handlers (and coercions) can return 418s easily, no matter what file they
@@ -250,7 +251,12 @@ like:</p>
     <span class="nv">description: </span><span class="s2">&quot;Per-language greetings&quot;</span>
     <span class="nv">shortName: </span><span class="s1">&#39;localGreeting&#39;</span>
     <span class="nv">GET: </span> <span class="o">-&gt;</span> <span class="nx">@ok</span> <span class="nv">greeting: </span><span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">],</span> <span class="nv">language: </span><span class="nx">@language</span>
-    <span class="nv">POST: </span><span class="o">-&gt;</span> <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="p">;</span> <span class="nx">@ok</span><span class="p">()</span>
+    <span class="nv">POST: </span><span class="o">-&gt;</span>
+      <span class="k">if</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
+        <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">greeting</span>
+        <span class="nx">@ok</span><span class="p">(</span><span class="s1">&#39;ok&#39;</span><span class="p">)</span>
+      <span class="k">else</span>
+        <span class="nx">@error</span> <span class="s1">&#39;InvalidParameter&#39;</span><span class="p">,</span> <span class="s1">&#39;greeting&#39;</span><span class="p">,</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
     <span class="nv">examples: </span><span class="p">[</span>
       <span class="p">{</span><span class="nv">method: </span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">language: </span><span class="s1">&#39;english&#39;</span><span class="p">}}</span>
       <span class="p">{</span><span class="nv">method: </span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">language: </span><span class="s1">&#39;english&#39;</span><span class="p">},</span> <span class="nv">body: </span><span class="s2">&quot;howdy&quot;</span><span class="p">}</span>
