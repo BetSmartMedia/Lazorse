@@ -13,7 +13,8 @@
     "lib",
     "examples",
     "test",
-    "README.md"
+    "lazorse.coffee",
+    "README.rst"
   ],
   "engines": {
     "node": ">=0.4.0"
