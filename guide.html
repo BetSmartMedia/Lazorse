@@ -83,10 +83,10 @@ viewed at <a class="reference external" href="https://github.com/BetSmartMedia/L
 </div>
 <div class="section" id="routing">
 <h2>Routing<a class="headerlink" href="#routing" title="Permalink to this headline">¶</a></h2>
-<p>The most unusual piece of lazorse is the route syntax: it&#8217;s the same as the
-<a class="reference external" href="http://tools.ietf.org/html/draft-gregorio-uritemplate-07">draft spec</a> for URI templates, but adds parameter matching
+<p>The most unusual piece of lazorse is the routing syntax: it&#8217;s the same as the
+<a class="reference external" href="http://tools.ietf.org/html/draft-gregorio-uritemplate-08">draft spec</a> for URI templates, but adds parameter matching
 semantics on top. (<a class="reference internal" href="matching_semantics.html#uri-template-matching"><em>Details and disclaimers</em></a>).</p>
-<p>You declare routes using the <tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.route</span></tt> method:</p>
+<p>You declare routes to resources using the <a class="reference internal" href="api.html#lazorse::LazyApp.resource" title="lazorse::LazyApp.resource"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.resource</span></tt></a> method:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span> <span class="o">-&gt;</span>
   <span class="nv">greetingLookup = english: </span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s2">&quot;Salut&quot;</span>
 
@@ -104,13 +104,14 @@ semantics on top. (<a class="reference internal" href="matching_semantics.html#u
 </pre></div>
 </div>
 <p>All of the keys are optional, but chances are you want to include at least one
-HTTP method handler, or your route will be unreachable. The handlers are called in
-a special context that contains all of the matched URI template parameters and a
-few other things (see <a class="reference internal" href="#handler-and-coercion-contexts"><em>Handler and coercion contexts</em></a> below for details)</p>
-<p>Lazorse also creates a default index (<tt class="docutils literal"><span class="pre">/</span></tt>) route. This route responds to GET
-with an array of all named routes with their URI template and other metadata,
-such as a description and examples if they are available. So our app Will return
-an array that looks like this:</p>
+HTTP method handler, or your resource will be unreachable. The handlers are
+called with <tt class="docutils literal"><span class="pre">this</span></tt> set to a special context that contains all of the matched
+URI template parameters and a few other things (see
+<a class="reference internal" href="#handler-and-coercion-contexts"><em>Handler and coercion contexts</em></a> below for details)</p>
+<p>Lazorse also creates a default index (<tt class="docutils literal"><span class="pre">/</span></tt>) resource. This resource responds to
+GET with an array of all named resources with their URI template and other
+metadata, such as a description and examples if they are available. So our app
+will return an array that looks like this:</p>
 <div class="highlight-javascript"><div class="highlight"><pre><span class="p">[</span>
   <span class="p">{</span>
     <span class="s2">&quot;template&quot;</span><span class="o">:</span> <span class="s2">&quot;/{language}/greetings&quot;</span><span class="p">,</span>
@@ -121,16 +122,16 @@ an array that looks like this:</p>
 <span class="p">]</span>
 </pre></div>
 </div>
-<p>A route without a <tt class="docutils literal"><span class="pre">shortName</span></tt> property will <em>not</em> show up in the index.</p>
+<p>A resource with no <tt class="docutils literal"><span class="pre">shortName</span></tt> property will <em>not</em> show up in the index.</p>
 </div>
 <div class="section" id="coercions">
 <span id="id1"></span><h2>Coercions<a class="headerlink" href="#coercions" title="Permalink to this headline">¶</a></h2>
 <p><cite>Coercions are a direct rip-off of the app.param() functionality of Express</cite></p>
 <p>Coercion callbacks can be added anywhere in your app using the
-<a class="reference internal" href="api.html#lazorse::LazyApp.coerce" title="lazorse::LazyApp.coerce"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.coerce</span></tt></a> method. The coercion will be called after if a
-the matching URI template captured a parameter of the same name. This adds a
-coercion to our greeting app that will restrict the <tt class="docutils literal"><span class="pre">language</span></tt> parameter to only
-pre-defined languages:</p>
+<a class="reference internal" href="api.html#lazorse::LazyApp.coerce" title="lazorse::LazyApp.coerce"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.coerce</span></tt></a> method. The coercion will be called if a URI
+template matches <tt class="docutils literal"><span class="pre">req.url</span></tt> and captures a parameter of the same name. This
+example adds a coercion to our greeting app that will restrict the <tt class="docutils literal"><span class="pre">language</span></tt>
+parameter to only pre-defined languages:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="nx">@coerce</span> <span class="s2">&quot;language&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
 <span class="s2">    A language to use for localized greetings.</span>
 <span class="s2">    Valid values: #{Object.keys(greetingLookup).join(&#39;, &#39;)}.</span>
@@ -143,7 +144,7 @@ pre-defined languages:</p>
       <span class="nx">next</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">language</span>
 </pre></div>
 </div>
-<p>This example also makes use of <a class="reference internal" href="#named-errors"><em>named errors</em></a>,</p>
+<p>This example also makes use of <a class="reference internal" href="#named-errors"><em>named errors</em></a>.</p>
 </div>
 <div class="section" id="handler-and-coercion-contexts">
 <span id="id2"></span><h2>Handler and coercion contexts<a class="headerlink" href="#handler-and-coercion-contexts" title="Permalink to this headline">¶</a></h2>
@@ -190,19 +191,23 @@ and falls back to JSON when it can&#8217;t provide it. You can easily add or ove
 the renderer for a new content type like so:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="c1"># Uses https://github.com/visionmedia/consolidate.js</span>
   <span class="c1"># and a non-standard resource property ``view``</span>
-  <span class="nv">cons = </span><span class="nx">require</span> <span class="s1">&#39;consolidate&#39;</span>
+  <span class="nv">consolidate = </span><span class="nx">require</span> <span class="s1">&#39;consolidate&#39;</span>
   <span class="nx">@render</span> <span class="s1">&#39;text/html&#39;</span><span class="p">,</span> <span class="nf">(req, res, next) -&gt;</span>
     <span class="nx">res</span><span class="p">.</span><span class="nx">setHeader</span> <span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;text/html&#39;</span>
     <span class="nv">engine = </span><span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">engine</span> <span class="o">or</span> <span class="s1">&#39;swig&#39;</span>
     <span class="nv">path   = </span><span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">path</span> <span class="o">or</span> <span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">shortName</span> <span class="o">or</span> <span class="s1">&#39;fallback.html&#39;</span>
-    <span class="nx">cons</span><span class="p">[</span><span class="nx">engine</span><span class="p">]</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="nf">(err, html) -&gt;</span>
+    <span class="nx">consolidate</span><span class="p">[</span><span class="nx">engine</span><span class="p">]</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="nf">(err, html) -&gt;</span>
       <span class="k">if</span> <span class="nx">err</span><span class="o">?</span> <span class="k">then</span> <span class="nx">next</span> <span class="nx">err</span> <span class="k">else</span> <span class="nx">res</span><span class="p">.</span><span class="nx">end</span> <span class="nx">html</span>
 </pre></div>
 </div>
-<p>Obviously, your own renderers would do something actually useful. In addition to
-<tt class="docutils literal"><span class="pre">res.data</span></tt>, Lazorse will add a <tt class="docutils literal"><span class="pre">req.route</span></tt> property that is the route object
-that serviced the request. This could be used to do something like look up a
-template or XML schema with <tt class="docutils literal"><span class="pre">req.route.shortName</span></tt>.</p>
+<p>With this in place, we could add a <tt class="docutils literal"><span class="pre">view</span></tt> property to any resource and have it
+rendered to html using a template:</p>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># a room with a view</span>
+<span class="nx">@resource</span> <span class="s1">&#39;/room/{id}&#39;</span><span class="o">:</span>
+  <span class="nv">view: </span><span class="p">{</span><span class="nv">engine: </span><span class="s1">&#39;eco&#39;</span><span class="p">,</span> <span class="nv">path: </span><span class="s1">&#39;room.eco&#39;</span><span class="p">}</span>
+  <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="p">...</span>
+</pre></div>
+</div>
 </div>
 <div class="section" id="error-handling">
 <h2>Error handling<a class="headerlink" href="#error-handling" title="Permalink to this headline">¶</a></h2>
