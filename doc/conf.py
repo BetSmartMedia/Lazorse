@@ -28,7 +28,7 @@ import sys, os
 extensions = ['sphinx.ext.autodoc', 'sphinxcontrib.coffeedomain']
 primary_domain = 'coffee'
 highlight_language = 'coffeescript'
-coffee_src_dir = os.path.abspath('../lib')
+coffee_src_dir = os.path.abspath('../')
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']

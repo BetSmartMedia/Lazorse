@@ -9,12 +9,12 @@ connect = require 'connect'
 # Used for loading example request JSON files
 {readFileSync} = require 'fs'
 
-###
-The main export is a function that constructs a ``LazyApp`` instance and
-starts it listening on the port defined by the apps ``port`` property (default
-is 3000)
-###
 module.exports = exports = (builder) ->
+  ###
+  The main export is a function that constructs a ``LazyApp`` instance and
+  starts it listening on the port defined by the apps ``port`` property (default
+  is 3000)
+  ###
   app = new LazyApp builder
   server = connect.createServer()
   server.use connect.favicon()
@@ -23,42 +23,42 @@ module.exports = exports = (builder) ->
   server.use app
   server.listen app.port
 
-###
-The module also exports a function that constructs an app without starting a
-server
-###
-exports.app = (builder) -> new LazyApp builder
+exports.app = (builder) ->
+  ### Construct an app without starting a server ###
+  new LazyApp builder
 
-###
-The main application class groups together five connect middleware:
-
-  :meth:`lazorse::LazyApp.findResource`
-    Finds the handler function for a request.
-
-  :meth:`lazorse::LazyApp.coerceParams`
-    Validates/translates incoming URI parameters into objects.
-
-  :meth:`lazorse::LazyApp.dispatchHandler`
-    Calls the handler function found by the router.
-
-  :meth:`lazorse::LazyApp.renderResponse`
-    Writes data back to the client.
-
-  :meth:`lazorse::LazyApp.handleErrors`
-    Handles known error types.
-
-Each of these methods is bound to the ``LazyApp`` instance, so they can be used
-as standalone middleware without needing to wrap them in another callback.
-###
 class LazyApp
   ###
-  The constructor takes a `builder` function as it's sole argument. This
-  function will be called in the context of the app object `before` the default
-  index and examples resources are created. The builder can change the location
-  of these resources by setting ``@indexPath`` and ``@examplePath``, or disable
-  them by setting the path to ``false``.
+  The main application class groups together five connect middleware:
+
+    :meth:`lazorse::LazyApp.findResource`
+      Finds the handler function for a request.
+
+    :meth:`lazorse::LazyApp.coerceParams`
+      Validates/translates incoming URI parameters into objects.
+
+    :meth:`lazorse::LazyApp.dispatchHandler`
+      Calls the handler function found by the router.
+
+    :meth:`lazorse::LazyApp.renderResponse`
+      Writes data back to the client.
+
+    :meth:`lazorse::LazyApp.handleErrors`
+      Handles known error types.
+
+  Each of these methods is bound to the ``LazyApp`` instance, so they can be used
+  as standalone middleware without needing to wrap them in another callback.
   ###
+
   constructor: (builder) ->
+    ###
+    The constructor takes a `builder` function as it's sole argument. This
+    function will be called in the context of the app object `before` the
+    default index, examples, and parameters resources are created. The builder
+    can change the location of these resources by setting ``@indexPath``,
+    ``@examplePath``, and ``@parameterPath`` respectively, or disable any of
+    them entirely by setting the path to ``false``.
+    ###
     app = @ # Needed by some of the callbacks defined here
 
     # Defaults
@@ -156,21 +156,21 @@ class LazyApp
 
     @resource defaultResources
 
-  ###
-  Register one or more resources. The ``specs`` object should map URI templates to
-  an object describing the resource. For example::
-
-      @resource '/{category}/{thing}':
-        shortName: "nameForClientsAndDocumentation"
-        description: "a longer description"
-        GET: -> ...
-        POST: -> ...
-        PUT: -> ...
-        examples: [
-          {method: 'GET', vars: {category: 'cats', thing: 'jellybean'}}
-        ]
-  ###
   resource: (specs) ->
+    ###
+    Register one or more resources. The ``specs`` object should map URI templates to
+    an object describing the resource. For example::
+
+        @resource '/{category}/{thing}':
+          shortName: "nameForClientsAndDocumentation"
+          description: "a longer description"
+          GET: -> ...
+          POST: -> ...
+          PUT: -> ...
+          examples: [
+            {method: 'GET', vars: {category: 'cats', thing: 'jellybean'}}
+          ]
+    ###
     for template, spec of specs
       if spec.shortName and @resourceIndex[spec.shortName]?
         throw new Error "Duplicate short name '#{spec.shortName}'"
@@ -180,70 +180,71 @@ class LazyApp
       for method in METHODS when handler = spec[method]
         @routes[method].push spec
 
-  ###
-  Register one or more helper functions. The ``helpers`` parameter should be an
-  object that maps helper names to callback functions.
-
-  The helpers will be made available in the context used by coercions and
-  request handlers (see :meth:`lazorse::LazyApp.buildContext`). So if you
-  register a helper named 'fryEgg' it will be available as ``@fryEgg``.
-  ###
   helper: (helpers) ->
+    ###
+    Register one or more helper functions. The ``helpers`` parameter should be an
+    object that maps helper names to callback functions.
+
+    The helpers will be made available in the context used by coercions and
+    request handlers (see :meth:`lazorse::LazyApp.buildContext`). So if you
+    register a helper named 'fryEgg' it will be available as ``@fryEgg``.
+    ###
     for name, helper of helpers
       @helpers[name] = helper
 
-  ###
-  Register a new template parameter coercion with the app. 
-
-  :param name: The name of the template parameter to be coerced.
-  :param description: A documentation string for the parameter name.
-  :param coercion: a ``(value, next) -> next(err, coercedValue)`` function that
-    will be called with ``this`` set to the request context. If not given, the
-    value will be passed through unchanged (useful for documentation purposes).
-
-  See :rst:ref:`coercions` in the guide for an example.
-  ###
   coerce: (name, description, coercion) ->
+    ###
+    Register a new template parameter coercion with the app.
+
+    :param name: The name of the template parameter to be coerced.
+    :param description: A documentation string for the parameter name.
+    :param coercion: a ``(value, next) -> next(err, coercedValue)`` function that will
+      be called with ``this`` set to the request context. If not given, the
+      value will be passed through unchanged (useful for documentation purposes).
+
+    See :rst:ref:`coercions` in the guide for an example.
+    ###
     throw new Error "Duplicate coercion name: #{name}" if @coercions[name]?
     @coercionDescriptions[name] = description
     @coercions[name] = coercion or (v, n) -> n(null, v)
 
-  ###
-  Register an error type with the app. The callback wlll be called by
-  ``@errorHandler`` when an error of this type is encountered.
-
-  Note that this *requires* named functions, so in coffeescript this means
-  using classes.
-
-  Additionally, errors of this type will be available to the @error helper in
-  handler/coercion callback by it's stringified name.
-
-  See :rst:ref:`named errors <named-errors>` in the guide for an example.
-  ###
   error: (errType, cb) ->
+    ###
+    Register an error type with the app. The callback wlll be called by
+    ``@errorHandler`` when an error of this type is encountered.
+
+    .. note:: this *requires* named functions, so in coffeescript this means
+      using classes.
+
+    Additionally, errors of this type will be available to the @error helper in
+    handler/coercion callback by it's stringified name.
+
+    See :rst:ref:`named errors <named-errors>` in the guide for an example.
+    ###
     errName = errType.name
     @errors[errName] = errType
     @errorHandlers[errName] = cb if cb?
 
 
-  ###
-  Register a new renderer function with the app. Can be supplied with two
-  parameters: a content-type and renderer function, or an object mapping
-  content-types to rendering functions.
-
-  See :rst:ref:`Rendering` in the guide for an example of a custom renderer.
-  ###
   render: (contentType, renderer) ->
+    ###
+    Register a new renderer function with the app.
+
+    :param contentType: The content type this renderer handles
+    :param renderer: A middleware that will render data to this content type.
+
+    See :rst:ref:`Rendering` in the guide for an example of a custom renderer.
+    ###
     if typeof contentType is 'object'
       @renderers[ct] = r for ct, r of contentType
     else
       @renderers[contentType] = renderer
 
-  ###
-  Call ``mod.include`` in the context of the app. The (optional) ``path``
-  parameter will be prefixed to all resources defined by the include.
-  ###
   include: (path, mod) ->
+    ###
+    Call ``mod.include`` in the context of the app. The (optional) ``path``
+    parameter will be prefixed to all resources defined by the include.
+    ###
     if typeof path.include == 'function'
       mod = path
       path = ''
@@ -254,13 +255,13 @@ class LazyApp
     mod.include.call @
     @_prefix = restorePrefix
 
-  ###
-  Find the first matching resource template for the request, and assign it to
-  ``req.resource``
-
-  `Connect middleware, remains bound to the app object.`
-  ###
   findResource: (req, res, next) =>
+    ###
+    Find the first resource with a URI template that matches ``req.url``, and
+    assign it to ``req.resource``
+
+    `Connect middleware, remains bound to the app object.`
+    ###
     try
       i = 0
       resources = @routes[req.method]
@@ -278,12 +279,12 @@ class LazyApp
     catch err
       next err
 
-  ###
-  Walk through ``req.vars`` call any registered coercions that apply.
-
-  `Connect middleware, remains bound to the app object.`
-  ###
   coerceParams: (req, res, next) =>
+    ###
+    Walk through ``req.vars`` call any registered coercions that apply.
+
+    `Connect middleware, remains bound to the app object.`
+    ###
     return next() unless req.vars
     toCoerce = []
     for name, value of req.vars
@@ -307,27 +308,27 @@ class LazyApp
     nextCoercion()
 
 
-  ###
-  Calls the handler function for the matched resource if it exists.
-
-  `Connect middleware, remains bound to the app object.`
-  ###
   dispatchHandler: (req, res, next) =>
+    ###
+    Calls the handler function for the matched resource if it exists.
+
+    `Connect middleware, remains bound to the app object.`
+    ###
     return next() unless req.resource?
     ctx = @buildContext req, res, next
     # the resource handler should call next()
     req.resource[req.method].call ctx, ctx
 
-  ###
-  Renders the data in ``req.data`` to the client.
-
-  Inspects the ``accept`` header and falls back to JSON if
-  it can't find a type it knows how to render. To install or override the
-  renderer for a given content/type use :meth:`lazorse::LazyApp.render`
-
-  `Connect middleware, remains bound to the app object.`
-  ###
   renderResponse: (req, res, next) =>
+    ###
+    Renders the data in ``req.data`` to the client.
+
+    Inspects the ``accept`` header and falls back to JSON if
+    it can't find a type it knows how to render. To install or override the
+    renderer for a given content/type use :meth:`lazorse::LazyApp.render`
+
+    `Connect middleware, remains bound to the app object.`
+    ###
     return next new @errors.NotFound if not req.resource
     return next new @errors.NoResponseData if not res.data
     if req.headers.accept and [types, _] = req.headers.accept.split ';'
@@ -339,14 +340,14 @@ class LazyApp
     res.setHeader 'Content-Type', 'application/json'
     @renderers['application/json'] req, res, next
 
-  ###
-  Intercept known errors types and return an appropriate response. If
-  ``@passErrors`` is set to false (the default) any unknown error will send
-  a generic 500 error.
-
-  `Connect middleware, remains bound to the app object.`
-  ###
   handleErrors: (err, req, res, next) ->
+    ###
+    Intercept known errors types and return an appropriate response. If
+    ``@passErrors`` is set to false (the default) any unknown error will send
+    a generic 500 error.
+
+    `Connect middleware, remains bound to the app object.`
+    ###
     errName = err.constructor.name
     if @errorHandlers[errName]?
       @errorHandlers[errName](err, req, res, next)
@@ -360,10 +361,8 @@ class LazyApp
       req.resource ?= true
       @renderResponse req, res, next
 
-  ###
-  .. include:: handler_context.rst
-  ###
   buildContext: (req, res, next) ->
+    ### .. include:: handler_context.rst ###
     ctx = {req, res, next, app: this}
     vars = req.vars
     for n, h of @helpers
@@ -371,26 +370,25 @@ class LazyApp
     vars.__proto__ = ctx
     vars
 
-  ###
-  Insert one or more connect middlewares into this apps internal stack.
-
-  :param existing: The middleware that new middleware should be inserted in
-  front of.
-
-  :param new_middle: The new middleware to insert. This can be *either* one or
-  more middleware functions, *or* a string name of a connect middleware and
-  additional parameters for that middleware.
-
-  Examples::
-    
-    @before @findResource, (req, res, next) ->
-      res.setHeader 'X-Nihilo', ''
-      next()
-
-    @before @findResource, 'static', __dirname + '/public'
-
-  ###
   before: (existing, new_middle...) ->
+    ###
+    Insert one or more connect middlewares into this apps internal stack.
+
+    :param existing: The middleware that new middleware should be inserted in
+      front of.
+    :param new_middle: The new middleware to insert. This can be *either* one or
+      more middleware functions, *or* a string name of a connect middleware and
+      additional parameters for that middleware.
+
+    Examples::
+
+      @before @findResource, (req, res, next) ->
+        res.setHeader 'X-Nihilo', ''
+        next()
+
+      @before @findResource, 'static', __dirname + '/public'
+
+    ###
     i = @_stack.indexOf(existing)
     if i < 0
       throw new Error "Middleware #{existing} does not exist in the app"
@@ -408,16 +406,12 @@ class LazyApp
       new_middle = [ connect[name](args...) ]
     @_stack.splice i, 0, new_middle...
 
-  ###
-  Extend a connect server with the default middleware stack from this app
-  ###
   extend: (server) ->
+    ### Extend a connect server with the middleware stack from this app ###
     server.use mw for mw in @_stack
 
-  ###
-  Act as a single connect middleware
-  ###
   handle: (req, res, goodbyeLazorse) ->
+    ### Act as a single connect middleware ###
     stack = (mw for mw in @_stack)
     nextMiddleware = =>
       mw = stack.shift()
