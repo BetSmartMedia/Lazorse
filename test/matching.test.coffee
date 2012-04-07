@@ -6,12 +6,13 @@ assert = require 'assert'
 withTemplate = (tpl_string, tests) ->
   tpl = parser.parse tpl_string
   describe "compiled from #{tpl_string}", ->
-    for url, result of tests
-      it "matches #{url} to #{JSON.stringify result}", ->
-        vars = tpl.match(url)
-        assert.deepEqual vars, result
-        if vars
-          assert.equal tpl.expand(vars), url
+    for url, expect of tests
+      it "matches #{url} to #{JSON.stringify expect}", ->
+        {vars} = tpl.match(url)
+        if expect
+          assert.deepEqual vars, expect
+        else
+          assert not vars
 
 describe 'A URI template', ->
   withTemplate '/{first}/{second}',

@@ -12,7 +12,7 @@ queryStringOps = ['?', '&']
 
 Template::match = (input) ->
   if @prefix
-    return false unless m = input.match '^' + @prefix
+    return {} unless m = input.match '^' + @prefix
     input = input.substring m[0].length
   vars = {}
   aliases = {}
