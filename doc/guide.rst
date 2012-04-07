@@ -22,11 +22,11 @@ Lazorse uses a "builder" pattern for creating app objects. You supply the functi
 Routing
 -------
 
-The most unusual piece of lazorse is the route syntax: it's the same as the
+The most unusual piece of lazorse is the routing syntax: it's the same as the
 `draft spec`_ for URI templates, but adds parameter matching
 semantics on top. (:ref:`Details and disclaimers <uri-template-matching>`).
 
-You declare routes using the :meth:`lazorse::LazyApp.route` method:
+You declare routes to resources using the :meth:`lazorse::LazyApp.resource` method:
 
 .. literalinclude:: ../examples/languages.coffee
   :language: coffeescript
@@ -34,14 +34,15 @@ You declare routes using the :meth:`lazorse::LazyApp.route` method:
   :end-before: examples
 
 All of the keys are optional, but chances are you want to include at least one
-HTTP method handler, or your route will be unreachable. The handlers are called in
-a special context that contains all of the matched URI template parameters and a
-few other things (see :ref:`handler-and-coercion-contexts` below for details)
+HTTP method handler, or your resource will be unreachable. The handlers are
+called with ``this`` set to a special context that contains all of the matched
+URI template parameters and a few other things (see
+:ref:`handler-and-coercion-contexts` below for details)
 
-Lazorse also creates a default index (``/``) route. This route responds to GET
-with an array of all named routes with their URI template and other metadata,
-such as a description and examples if they are available. So our app Will return
-an array that looks like this:
+Lazorse also creates a default index (``/``) resource. This resource responds to
+GET with an array of all named resources with their URI template and other
+metadata, such as a description and examples if they are available. So our app
+will return an array that looks like this:
 
 .. sourcecode:: javascript
 
@@ -54,7 +55,7 @@ an array that looks like this:
       }
     ]
 
-A route without a ``shortName`` property will *not* show up in the index.
+A resource with no ``shortName`` property will *not* show up in the index.
 
 .. _coercions:
 
@@ -64,17 +65,17 @@ Coercions
 `Coercions are a direct rip-off of the app.param() functionality of Express`
 
 Coercion callbacks can be added anywhere in your app using the
-:meth:`~lazorse::LazyApp.coerce` method. The coercion will be called after if a
-the matching URI template captured a parameter of the same name. This adds a
-coercion to our greeting app that will restrict the ``language`` parameter to only
-pre-defined languages:
+:meth:`~lazorse::LazyApp.coerce` method. The coercion will be called if a URI
+template matches ``req.url`` and captures a parameter of the same name. This
+example adds a coercion to our greeting app that will restrict the ``language``
+parameter to only pre-defined languages:
 
 .. literalinclude::  ../examples/languages.coffee
     :language: coffeescript
     :start-after: pre-defined
     :end-before: custom render
 
-This example also makes use of :ref:`named errors <named-errors>`,
+This example also makes use of :ref:`named errors <named-errors>`.
 
 .. _handler-and-coercion-contexts:
 
@@ -105,10 +106,15 @@ the renderer for a new content type like so:
   :start-after: custom rendering
   :end-before: custom error
 
-Obviously, your own renderers would do something actually useful. In addition to
-``res.data``, Lazorse will add a ``req.route`` property that is the route object
-that serviced the request. This could be used to do something like look up a
-template or XML schema with ``req.route.shortName``.
+With this in place, we could add a ``view`` property to any resource and have it
+rendered to html using a template:
+
+.. sourcecode:: coffeescript
+
+  # a room with a view
+  @resource '/room/{id}':
+    view: {engine: 'eco', path: 'room.eco'}
+    GET: -> ...
 
 Error handling
 --------------
@@ -167,4 +173,4 @@ expanded into a full URI path, so ``GET /examples/localGreeting`` would return:
         }
     ]
 
-.. _draft spec: http://tools.ietf.org/html/draft-gregorio-uritemplate-07
+.. _draft spec: http://tools.ietf.org/html/draft-gregorio-uritemplate-08

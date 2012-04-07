@@ -34,12 +34,12 @@ lazorse ->
   # Extend the app with a custom rendering engine
   # Uses https://github.com/visionmedia/consolidate.js
   # and a non-standard resource property ``view``
-  cons = require 'consolidate'
+  consolidate = require 'consolidate'
   @render 'text/html', (req, res, next) ->
     res.setHeader 'Content-Type', 'text/html'
     engine = req.resource.view?.engine or 'swig'
     path   = req.resource.view?.path or req.resource.shortName or 'fallback.html'
-    cons[engine] path, res.data, (err, html) ->
+    consolidate[engine] path, res.data, (err, html) ->
       if err? then next err else res.end html
 
   # Define a custom error type, we must use a class in CoffeeScript to get a
