@@ -20,17 +20,17 @@
     "node": ">=0.4.0"
   },
   "dependencies": {
-    "coffee-script": "~1.2.0",
     "connect": "~2.0.0",
     "uri-template": "~0.3.0"
   },
   "devDependencies": {
     "mocha": "~1.0.0",
+    "coffee-script": "~1.2.0",
     "consolidate": "0.1.0"
   },
   "scripts": {
-    "test": "mocha",
-    "prepublish": "coffee prepublish.coffee"
+    "test": "make test",
+    "prepublish": "make release"
   },
   "optionalDependencies": {}
 }
