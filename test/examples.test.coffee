@@ -5,6 +5,7 @@ assert = require('assert')
 errors = require '../lib/errors'
 
 server = lazorse ->
+  @_stack.shift() # drop logger
   @port = 0
   @resource '/frob/{foozle}/{whatsit}':
     GET: -> @error "teapot"

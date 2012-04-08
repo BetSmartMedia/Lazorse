@@ -4,6 +4,7 @@ assert = require 'assert'
 
 # Test server
 server = lazorse ->
+  @_stack.shift() # drop logger
   @port = 0
   for method in client.METHODS
     resource = {}

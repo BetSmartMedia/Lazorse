@@ -8,6 +8,7 @@ TeapotError = ->
   Error.captureStackTrace @, TeapotError
 
 server = lazorse ->
+  @_stack.shift() # drop logger
   @port = 0
   @resource '/byNameUnregistered':
     GET: -> @error "TeapotError"

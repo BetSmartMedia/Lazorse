@@ -36,6 +36,7 @@ testResources =
 echo = -> @ok @req.vars
 
 server = lazorse ->
+  @_stack.shift() # drop logger
   @port = 0
   resources = {}
   resources[tpl] = {GET: echo} for tpl of testResources

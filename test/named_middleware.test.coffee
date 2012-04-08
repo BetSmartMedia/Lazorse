@@ -4,6 +4,7 @@ assert = require 'assert'
 
 describe "Passing a string to @before", ->
   server = lazorse ->
+    @_stack.shift() # drop logger
     @port = 0
     @before @findResource, 'static', "#{__dirname}/static"
 

@@ -10,6 +10,7 @@ assert = require 'assert'
 describe "An app with @before middleware", ->
   stack = ['findResource', 'coerceParams', 'dispatchHandler', 'renderResponse']
   server = lazorse ->
+    @_stack.shift() # drop logger
     @port = 0
     response_data = word: 'up'
 
