@@ -25,8 +25,8 @@
     "uri-template": "~0.3.0"
   },
   "devDependencies": {
-    "consolidate": "0.1.0",
-    "mocha": "~0.7.0"
+    "mocha": "~1.0.0",
+    "consolidate": "0.1.0"
   },
   "scripts": {
     "test": "mocha",
