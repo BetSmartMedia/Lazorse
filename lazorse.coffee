@@ -15,13 +15,12 @@ module.exports = exports = (builder) ->
   starts it listening on the port defined by the apps ``port`` property (default
   is 3000)
   ###
-  app = new LazyApp builder
-  server = connect.createServer()
-  server.use connect.favicon()
-  server.use connect.logger()
-  server.use connect.bodyParser()
-  server.use app
-  server.listen app.port
+  wrappedBuilder = ->
+    for mw in ['logger', 'favicon', 'bodyParser']
+      @before @findResource, mw
+    builder.call @
+  app = new LazyApp wrappedBuilder
+  connect().use(app).listen app.port
 
 exports.app = (builder) ->
   ### Construct an app without starting a server ###
