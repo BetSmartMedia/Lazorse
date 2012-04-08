@@ -2,12 +2,6 @@
 tpl_classes = require 'uri-template/lib/classes'
 {Template, SimpleExpression} = tpl_classes
 
-old_expr = tpl_classes.expression
-tpl_classes.expression = (op, params) ->
-  for p in params when p.extended
-    console.log p
-  old_expr op, params
-
 queryStringOps = ['?', '&']
 
 Template::match = (input) ->

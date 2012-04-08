@@ -290,7 +290,6 @@ class LazyApp
     for name, value of req.vars
       if coercion = @coercions[req.aliases[name] or name]
         toCoerce.push [name, value, coercion]
-    console.log toCoerce
 
     return next() unless toCoerce.length
 
