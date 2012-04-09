@@ -1,6 +1,6 @@
 .PHONY : test
 
-PATH := ./node_modules/.bin/:$(PATH)
+BIN = ./node_modules/.bin
 LIBS = $(subst src,lib,$(subst coffee,js,$(wildcard ./src/*.coffee)))
 HEAD = $(shell git describe --contains --all HEAD)
 REPORTER ?= dot
@@ -12,10 +12,10 @@ lib/%.js : src/%.coffee
 	@coffee -pbc $< > $@
 
 test : all
-	@mocha --compilers coffee:coffee-script --reporter $(REPORTER)
+	@$(BIN)/mocha --compilers coffee:coffee-script --reporter $(REPORTER)
 
 %.js : %.coffee
-	@coffee -pbc $< > $@
+	@$(BIN)/coffee -pbc $< > $@
 
 clean :
 	@rm *.js lib/*.js || true
