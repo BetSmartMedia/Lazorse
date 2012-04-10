@@ -57,4 +57,4 @@ lazorse ->
       Tip! me over and pour me out!
     """
 
-  @resource '/teapot': GET: -> @error new TeapotError
+  @resource '/teapot': GET: -> @error 'TeapotError'
