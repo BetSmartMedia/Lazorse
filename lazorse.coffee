@@ -294,12 +294,12 @@ class LazyApp
 
     toCoerce.sort (a, b) -> req.url.indexOf(a[0]) - req.url.indexOf(b[0])
     i = 0
-    ctx = @buildContext req, res, next
+    req._ctx ?= buildContext @, req, res, next
     nextCoercion = ->
       nvc = toCoerce[i++]
       return next() unless nvc
       [name, value, coercion] =  nvc
-      coercion.call ctx, value, (e, newValue) ->
+      coercion.call req._ctx, value, (e, newValue) ->
         return next e if e?
         req.vars[name] = newValue
         nextCoercion()
@@ -313,9 +313,9 @@ class LazyApp
     `Connect middleware, remains bound to the app object.`
     ###
     return next() unless req.resource?
-    ctx = @buildContext req, res, next
+    req._ctx ?= buildContext @, req, res, next
     # the resource handler should call next()
-    req.resource[req.method].call ctx, ctx
+    req.resource[req.method].call req._ctx, req._ctx
 
   renderResponse: (req, res, next) =>
     ###
@@ -359,12 +359,12 @@ class LazyApp
       req.resource ?= true
       @renderResponse req, res, next
 
-  buildContext: (req, res, next) ->
-    ### .. include:: handler_context.rst ###
-    ctx = {req, res, next, app: this}
+  # Private
+  buildContext = (app, req, res, next) ->
+    ctx = {req, res, next, app}
     vars = req.vars
-    for n, h of @helpers
-      ctx[n] = if 'function' == typeof h then h.bind vars else h
+    for n, h of app.helpers
+      ctx[n] = if typeof h is 'function' then h.bind(vars) else h
     vars.__proto__ = ctx
     vars
 
