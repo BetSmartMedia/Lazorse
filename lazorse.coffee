@@ -2,29 +2,18 @@
 
 METHODS = ['DELETE', 'GET', 'HEAD', 'PATCH', 'POST', 'PUT', 'OPTIONS']
 
+connect = require 'connect'
+parser = require 'uri-template'
 require './lib/uri-template-matchpatch'
 errors = require './lib/errors'
-parser = require 'uri-template'
-connect = require 'connect'
-# Used for loading example request JSON files
-{readFileSync} = require 'fs'
 
-module.exports = exports = (builder) ->
-  ###
-  The main export is a function that constructs a ``LazyApp`` instance and
-  starts it listening on the port defined by the apps ``port`` property (default
-  is 3000)
-  ###
-  wrappedBuilder = ->
-    for mw in ['logger', 'favicon', 'bodyParser']
-      @before @findResource, mw
-    builder.call @
-  app = new LazyApp wrappedBuilder
-  connect().use(app).listen app.port
+module.exports = exports = (builder) -> new LazyApp builder
 
-exports.app = (builder) ->
-  ### Construct an app without starting a server ###
-  new LazyApp builder
+exports.connect = (builder) -> connect().use(exports(builder))
+
+exports.server = (address, builder) ->
+  app = exports.connect(builder)
+  require('http').createServer(app).listen address.port or 0, address.host
 
 class LazyApp
   ###
@@ -50,18 +39,9 @@ class LazyApp
   ###
 
   constructor: (builder) ->
-    ###
-    The constructor takes a `builder` function as it's sole argument. This
-    function will be called in the context of the app object `before` the
-    default index, examples, and parameters resources are created. The builder
-    can change the location of these resources by setting ``@indexPath``,
-    ``@examplePath``, and ``@parameterPath`` respectively, or disable any of
-    them entirely by setting the path to ``false``.
-    ###
     app = @ # Needed by some of the callbacks defined here
 
     # Defaults
-    @port = 3000
     @renderers = {}
     @renderers[type] = func for type, func of require './lib/render'
 

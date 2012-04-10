@@ -2,24 +2,22 @@ lazorse = require '../'
 client = require('./client')
 assert = require('assert')
 
-TeapotError = ->
-  @code = 418
-  @message = "I'm a teapot"
-  Error.captureStackTrace @, TeapotError
-
-server = lazorse ->
-  @_stack.shift() # drop logger
-  @port = 0
-  @resource '/byNameUnregistered':
-    GET: -> @error "TeapotError"
-
-  @resource '/byNameRegistered':
-    GET: -> @error "TeapotError"
-
-  @resource '/usingConstructor':
-    GET: -> @error TeapotError
-
 describe "An app that uses custom errors", ->
+  TeapotError = ->
+    @code = 418
+    @message = "I'm a teapot"
+    Error.captureStackTrace @, TeapotError
+
+  server = lazorse.server port: 0, host: '127.0.0.1', ->
+    @resource '/byNameUnregistered':
+      GET: -> @error "TeapotError"
+
+    @resource '/byNameRegistered':
+      GET: -> @error "TeapotError"
+
+    @resource '/usingConstructor':
+      GET: -> @error TeapotError
+
   before -> client.usePort server.address().port
   after -> server.close()
 

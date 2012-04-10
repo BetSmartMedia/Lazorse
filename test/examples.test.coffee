@@ -2,30 +2,25 @@ lazorse = require '../'
 client = require('./client')
 assert = require('assert')
 
-errors = require '../lib/errors'
-
-server = lazorse ->
-  @_stack.shift() # drop logger
-  @port = 0
-  @resource '/frob/{foozle}/{whatsit}':
-    GET: -> @error "teapot"
-    shortName: "frob"
-    examples: [
-      {
-        method: 'GET'
-        vars: {foozle: 'hem', whatsit: 'haw'}
-      }
-      {
-        method: 'GET'
-        vars: {foozle: 'ni', whatsit: 'cate'}
-        body: {
-          thing: 'is'
-        }
-      }
-    ]
-
-
 describe "An app with examples", ->
+  server = lazorse.server port: 0, host: '127.0.0.1', ->
+    @resource '/frob/{foozle}/{whatsit}':
+      GET: -> @error "teapot"
+      shortName: "frob"
+      examples: [
+        {
+          method: 'GET'
+          vars: {foozle: 'hem', whatsit: 'haw'}
+        }
+        {
+          method: 'GET'
+          vars: {foozle: 'ni', whatsit: 'cate'}
+          body: {
+            thing: 'is'
+          }
+        }
+      ]
+
   before -> client.usePort server.address().port
   after -> server.close()
 

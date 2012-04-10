@@ -1,43 +1,39 @@
 lazorse = require '../'
-client = require('./client')
+client = require './client'
 assert = require 'assert'
 
-# Test server
-server = lazorse ->
-  @_stack.shift() # drop logger
-  @port = 0
-  for method in client.METHODS
-    resource = {}
-    uri = "/#{method}me"
-    resource[uri] = {}
-    resource[uri][method] = if method is 'HEAD'
-      -> @res.end()
-    else
-      -> @ok "#{method}"
-
-    @resource resource
-
-  @resource '/indexed':
-    shortName: 'discoverableResource'
-    GET: -> @ok 'found it'
-
-  @resource '/404':
-    GET: -> @error 'NotFound', 'string error name', 'works'
-
-  @resource '/500':
-    GET: -> @next new Error "I'm an unknown error type"
-
-  @resource '/422':
-    GET: -> @error 'InvalidParameter', 'bad param'
-
-# Tests
 describe "A basic app", ->
+  server = lazorse.server port: 0, host: '127.0.0.1', ->
+    for method in client.METHODS
+      resource = {}
+      uri = "/#{method}me"
+      resource[uri] = {}
+      resource[uri][method] = if method is 'HEAD'
+        -> @res.end()
+      else
+        -> @ok "#{method}"
+
+      @resource resource
+
+    @resource '/indexed':
+      shortName: 'discoverableResource'
+      GET: -> @ok 'found it'
+
+    @resource '/404':
+      GET: -> @error 'NotFound', 'string error name', 'works'
+
+    @resource '/500':
+      GET: -> @next new Error "I'm an unknown error type"
+
+    @resource '/422':
+      GET: -> @error 'InvalidParameter', 'bad param'
+
   before -> client.usePort server.address().port
   after  -> server.close()
 
   it "has an index with three resources", (done) ->
     client.GET '/', (res, resources) ->
-      assert.equal res.statusCode, 200
+      assert.equal res.statusCode, 200, res.headers
       assert.equal resources.length, 3
       assert 'discoverableResource' in (r.shortName for r in resources)
       done()

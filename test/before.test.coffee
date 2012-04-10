@@ -3,15 +3,14 @@ Tests that the @before builder function inserts new middleware into the correct
 position in the internal middleware stack
 ###
 
+client = require './client'
 lazorse = require '../'
-client = require('./client')
 assert = require 'assert'
 
 describe "An app with @before middleware", ->
   stack = ['findResource', 'coerceParams', 'dispatchHandler', 'renderResponse']
-  server = lazorse ->
-    @_stack.shift() # drop logger
-    @port = 0
+
+  server = lazorse.server port: 0, host: '127.0.0.1', ->
     response_data = word: 'up'
 
     # Assert various attributes of the req/res state before each middleware

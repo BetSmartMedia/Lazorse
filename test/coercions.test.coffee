@@ -1,11 +1,9 @@
-lazorse = require('../')
-client = require('./client')
+client = require './client'
+lazorse= require '../'
 assert = require 'assert'
 
 describe "Using coercions", ->
-  server = lazorse ->
-    @_stack.shift() # drop logger
-    @port = 0
+  server = lazorse.server port: 0, host: '127.0.0.1', ->
 
     @resource '/hello/{name}': GET: -> @ok "Hello #{@name}"
 
