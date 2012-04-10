@@ -404,10 +404,6 @@ class LazyApp
       new_middle = [ connect[name](args...) ]
     @_stack.splice i, 0, new_middle...
 
-  extend: (server) ->
-    ### Extend a connect server with the middleware stack from this app ###
-    server.use mw for mw in @_stack
-
   handle: (req, res, goodbyeLazorse) ->
     ### Act as a single connect middleware ###
     stack = (mw for mw in @_stack)
