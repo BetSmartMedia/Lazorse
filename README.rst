@@ -1,19 +1,20 @@
 Lazorse!
 ========
 
-Lazorse is a web-framework with a strong emphasis on extensibility and
-separation of various concerns into independant middleware layers.
+Lazorse is a resource-oriented web-framework with a strong emphasis on
+extensibility and the separation of various concerns into independent
+middleware_ layers.
 
-It includes middleware to route requests, coerce parameters, dispatch to handlers,
-and render a response.  
-It borrows heavily from `other`_ `awesome`_ nodejs 
-`web frameworks`_ but with a couple of twists designed to make writing 
-machine-consumable ReSTful APIs a little easier. Because it's all "just 
+It includes middleware to find a resource, coerce URL parameters, dispatch to
+HTTP method handlers, and render a response.  
+
+It borrows heavily from other_ awesome_ node.js `web frameworks`_ but with a
+couple of twists designed to make writing machine-consumable ReSTful APIs a little easier. Because it's all "just 
 middleware", you can also pull out and re-arrange the various pieces to better 
 suit the needs of your application.
 
-.. _uri template rfc: http://tools.ietf.org/html/draft-gregorio-uritemplate-07
-.. _web frameworks: http://expressjs.com
+.. _middleware: http://stephensugden.com/middleware_guide/
+.. _web frameworks: http://expressjs.com/
 .. _other: http://zappajs.org
 .. _awesome: https://github.com/kadirpekel/coffeemate
 

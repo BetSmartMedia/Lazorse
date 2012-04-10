@@ -141,8 +141,8 @@ class LazyApp
     an object describing the resource. For example::
 
         @resource '/{category}/{thing}':
-          shortName: "nameForClientsAndDocumentation"
-          description: "a longer description"
+          shortName: "categorizedThing" # for internal linking and client libs.
+          description: "Things that belong to a category" # for documentation.
           GET: -> ...
           POST: -> ...
           PUT: -> ...
@@ -161,12 +161,13 @@ class LazyApp
 
   helper: (helpers) ->
     ###
-    Register one or more helper functions. The ``helpers`` parameter should be an
-    object that maps helper names to callback functions.
+    Register one or more helper objects. The ``helpers`` parameter should be an
+    object that maps helper names to objects/functions.
 
     The helpers will be made available in the context used by coercions and
     request handlers (see :meth:`lazorse::LazyApp.buildContext`). So if you
-    register a helper named 'fryEgg' it will be available as ``@fryEgg``.
+    register a helper named 'fryEgg' it will be available as ``@fryEgg``. If
+    your helper is a function, it will be bound to the request context.
     ###
     for name, helper of helpers
       @helpers[name] = helper
@@ -189,16 +190,18 @@ class LazyApp
 
   error: (errType, cb) ->
     ###
-    Register an error type with the app. The callback wlll be called by
-    ``@errorHandler`` when an error of this type is encountered.
+    Register an error constructor with the app. The callback wlll be called by
+    :meth:`lazorse::LazyApp.handleErrors` when an error of this type is
+    encountered.
 
-    .. note:: this *requires* named functions, so in coffeescript this means
-      using classes.
-
-    Additionally, errors of this type will be available to the @error helper in
-    handler/coercion callback by it's stringified name.
+    Additionally, errors of this type will be available to the ``@error`` helper
+    in handler/coercion callback by it's stringified name.
 
     See :rst:ref:`named errors <named-errors>` in the guide for an example.
+
+    .. note::
+      *Named functions are required*. You must use a class for your errors in
+      CoffeeScript as it's the only way to generate a named function.
     ###
     errName = errType.name
     @errors[errName] = errType
@@ -219,134 +222,20 @@ class LazyApp
     else
       @renderers[contentType] = renderer
 
-  include: (path, mod) ->
+  include: (path, obj) ->
     ###
-    Call ``mod.include`` in the context of the app. The (optional) ``path``
+    Call ``obj.include`` in the context of the app. The (optional) ``path``
     parameter will be prefixed to all resources defined by the include.
     ###
     if typeof path.include == 'function'
-      mod = path
+      obj = path
       path = ''
-    if typeof mod.include != 'function'
-      throw new Error "#{mod} does not have a .include method"
+    if typeof obj.include != 'function'
+      throw new Error "#{obj} does not have a .include method"
     restorePrefix = @_prefix
     @_prefix = path
-    mod.include.call @
+    obj.include.call @
     @_prefix = restorePrefix
-
-  findResource: (req, res, next) =>
-    ###
-    Find the first resource with a URI template that matches ``req.url``, and
-    assign it to ``req.resource``
-
-    `Connect middleware, remains bound to the app object.`
-    ###
-    try
-      i = 0
-      resources = @routes[req.method]
-      nextHandler = (err) =>
-        return next err if err? and err != 'resource'
-        r = resources[i++]
-        return next(new @errors.NotFound 'resource', req.url) unless r?
-        {vars, aliases} = r.template.match req.url
-        return nextHandler() unless vars
-        req.resource = r
-        req.vars = vars
-        req.aliases = aliases
-        next()
-      nextHandler()
-    catch err
-      next err
-
-  coerceParams: (req, res, next) =>
-    ###
-    Walk through ``req.vars`` call any registered coercions that apply.
-
-    `Connect middleware, remains bound to the app object.`
-    ###
-    return next() unless req.vars
-    toCoerce = []
-    for name, value of req.vars
-      if coercion = @coercions[req.aliases[name] or name]
-        toCoerce.push [name, value, coercion]
-
-    return next() unless toCoerce.length
-
-    toCoerce.sort (a, b) -> req.url.indexOf(a[0]) - req.url.indexOf(b[0])
-    i = 0
-    req._ctx ?= buildContext @, req, res, next
-    nextCoercion = ->
-      nvc = toCoerce[i++]
-      return next() unless nvc
-      [name, value, coercion] =  nvc
-      coercion.call req._ctx, value, (e, newValue) ->
-        return next e if e?
-        req.vars[name] = newValue
-        nextCoercion()
-    nextCoercion()
-
-
-  dispatchHandler: (req, res, next) =>
-    ###
-    Calls the handler function for the matched resource if it exists.
-
-    `Connect middleware, remains bound to the app object.`
-    ###
-    return next() unless req.resource?
-    req._ctx ?= buildContext @, req, res, next
-    # the resource handler should call next()
-    req.resource[req.method].call req._ctx, req._ctx
-
-  renderResponse: (req, res, next) =>
-    ###
-    Renders the data in ``req.data`` to the client.
-
-    Inspects the ``accept`` header and falls back to JSON if
-    it can't find a type it knows how to render. To install or override the
-    renderer for a given content/type use :meth:`lazorse::LazyApp.render`
-
-    `Connect middleware, remains bound to the app object.`
-    ###
-    return next new @errors.NotFound if not req.resource
-    return next new @errors.NoResponseData if not res.data
-    if req.headers.accept and [types, _] = req.headers.accept.split ';'
-      for type in types.split ','
-        if @renderers[type]?
-          res.setHeader 'Content-Type', type
-          return @renderers[type] req, res, next
-    # Fall back to JSON
-    res.setHeader 'Content-Type', 'application/json'
-    @renderers['application/json'] req, res, next
-
-  handleErrors: (err, req, res, next) ->
-    ###
-    Intercept known errors types and return an appropriate response. If
-    ``@passErrors`` is set to false (the default) any unknown error will send
-    a generic 500 error.
-
-    `Connect middleware, remains bound to the app object.`
-    ###
-    errName = err.constructor.name
-    if @errorHandlers[errName]?
-      @errorHandlers[errName](err, req, res, next)
-    else if @passErrors and not (err.code and err.message)
-      next err, req, res
-    else
-      res.statusCode = err.code or 500
-      message = 'string' == typeof err and err or err.message or "Internal error"
-      res.data = error: message
-      # @renderer will re-error if req.resource isn't set (e.g. no resource matched)
-      req.resource ?= true
-      @renderResponse req, res, next
-
-  # Private
-  buildContext = (app, req, res, next) ->
-    ctx = {req, res, next, app}
-    vars = req.vars
-    for n, h of app.helpers
-      ctx[n] = if typeof h is 'function' then h.bind(vars) else h
-    vars.__proto__ = ctx
-    vars
 
   before: (existing, new_middle...) ->
     ###
@@ -383,6 +272,112 @@ class LazyApp
         throw new Error "Can't find middleware by name #{name}"
       new_middle = [ connect[name](args...) ]
     @_stack.splice i, 0, new_middle...
+
+  findResource: (req, res, next) =>
+    ###
+    Find the first resource with a URI template that matches ``req.url``.
+
+    Sets ``req.resource`` to the spec passed to :meth:`~lazorse::LazyApp.resource`,
+    and ``req.vars`` to the extracted URL parameters.
+    ###
+    try
+      i = 0
+      resources = @routes[req.method]
+      nextHandler = (err) =>
+        return next err if err? and err != 'resource'
+        r = resources[i++]
+        return next(new @errors.NotFound 'resource', req.url) unless r?
+        {vars, aliases} = r.template.match req.url
+        return nextHandler() unless vars
+        req.resource = r
+        req.vars = vars
+        req.aliases = aliases
+        next()
+      nextHandler()
+    catch err
+      next err
+
+  coerceParams: (req, res, next) =>
+    ###
+    Walk through ``req.vars`` and call any registered coercions that apply.
+    ###
+    return next() unless req.vars
+    toCoerce = []
+    for name, value of req.vars
+      if coercion = @coercions[req.aliases[name] or name]
+        toCoerce.push [name, value, coercion]
+
+    return next() unless toCoerce.length
+
+    toCoerce.sort (a, b) -> req.url.indexOf(a[0]) - req.url.indexOf(b[0])
+    i = 0
+    req._ctx ?= buildContext @, req, res, next
+    nextCoercion = ->
+      n_v_c = toCoerce[i++]
+      return next() unless n_v_c
+      [name, value, coercion] = n_v_c
+      coercion.call req._ctx, value, (e, newValue) ->
+        return next e if e?
+        req.vars[name] = newValue
+        nextCoercion()
+    nextCoercion()
+
+
+  dispatchHandler: (req, res, next) =>
+    ###
+    Calls the handler function for the matched resource if it exists.
+    ###
+    return next() unless req.resource?
+    req._ctx ?= buildContext @, req, res, next
+    # the resource handler should call next()
+    req.resource[req.method].call req._ctx, req._ctx
+
+  renderResponse: (req, res, next) =>
+    ###
+    Renders the data in ``req.data`` to the client.
+
+    Inspects the ``accept`` header and falls back to JSON if
+    it can't find a type it knows how to render. To install or override the
+    renderer for a given content/type use :meth:`lazorse::LazyApp.render`
+    ###
+    return next new @errors.NotFound if not req.resource
+    return next new @errors.NoResponseData if not res.data
+    if req.headers.accept and [types, _] = req.headers.accept.split ';'
+      for type in types.split ','
+        if @renderers[type]?
+          res.setHeader 'Content-Type', type
+          return @renderers[type] req, res, next
+    # Fall back to JSON
+    res.setHeader 'Content-Type', 'application/json'
+    @renderers['application/json'] req, res, next
+
+  handleErrors: (err, req, res, next) ->
+    ###
+    Intercept known errors types and return an appropriate response. If
+    ``@passErrors`` is set to false (the default) any unknown error will send
+    a generic 500 error.
+    ###
+    errName = err.constructor.name
+    if @errorHandlers[errName]?
+      @errorHandlers[errName](err, req, res, next)
+    else if @passErrors and not (err.code and err.message)
+      next err, req, res
+    else
+      res.statusCode = err.code or 500
+      message = ('string' is typeof err and err) or err.message or "Internal error"
+      res.data = error: message
+      # @renderer will re-error if req.resource isn't set (e.g. no resource matched)
+      req.resource ?= true
+      @renderResponse req, res, next
+
+  # Private
+  buildContext = (app, req, res, next) ->
+    ctx = {req, res, next, app}
+    vars = req.vars
+    for n, h of app.helpers
+      ctx[n] = if typeof h is 'function' then h.bind(vars) else h
+    vars.__proto__ = ctx
+    vars
 
   handle: (req, res, goodbyeLazorse) ->
     ### Act as a single connect middleware ###
