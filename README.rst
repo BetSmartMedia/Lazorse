@@ -1,6 +1,9 @@
 Lazorse!
 ========
 
+.. image:: https://secure.travis-ci.org/BetSmartMedia/Lazorse.png?branch=master
+  :target: http://travis-ci.org/BetSmartMedia/Lazorse
+
 Lazorse is a resource-oriented web-framework with a strong emphasis on
 extensibility and the separation of various concerns into independent
 middleware_ layers.
