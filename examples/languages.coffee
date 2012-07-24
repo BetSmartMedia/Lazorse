@@ -1,5 +1,5 @@
 lazorse = require '../'
-lazorse ->
+lazorse.server port: 3001, ->
   greetingLookup = english: "Hi", french: "Salut"
 
   # This defines a resource that accepts both GET and POST
