@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Lazorse! &mdash; Lazorse 0.5.7 documentation</title>
+    <title>Lazorse! &mdash; Lazorse 0.6.1 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.7',
+        VERSION:     '0.6.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/waypoints.min.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    <link rel="top" title="Lazorse 0.5.7 documentation" href="#" />
+    <link rel="top" title="Lazorse 0.6.1 documentation" href="#" />
     <link rel="next" title="Guide" href="guide.html" /> 
   </head>
   <body>  
@@ -47,7 +47,6 @@
 <h3>Project Links</h3>
 <ul>
 
-<li><a href="#">Documentation Index</a></li>
 <li><a href="http://github.com/BetSmartMedia/Lazorse">Source on Github</a></li>
 <li><a href="http://github.com/BetSmartMedia/Lazorse/tree/master/examples">Example Apps</a></li>
 
@@ -67,13 +66,14 @@
 <img alt="_images/justpony.png" id="pony" src="_images/justpony.png" />
 <div class="section" id="lazorse">
 <h1>Lazorse!<a class="headerlink" href="#lazorse" title="Permalink to this headline">¶</a></h1>
-<p>Lazorse is a web-framework with a strong emphasis on extensibility and
-separation of various concerns into independant middleware layers.</p>
-<p>It includes middleware to route requests, coerce parameters, dispatch to handlers,
-and render a response.
-It borrows heavily from <a class="reference external" href="http://zappajs.org">other</a> <a class="reference external" href="https://github.com/kadirpekel/coffeemate">awesome</a> nodejs
-<a class="reference external" href="http://expressjs.com">web frameworks</a> but with a couple of twists designed to make writing
-machine-consumable ReSTful APIs a little easier. Because it&#8217;s all &#8220;just
+<a class="reference external image-reference" href="http://travis-ci.org/BetSmartMedia/Lazorse"><img alt="https://secure.travis-ci.org/BetSmartMedia/Lazorse.png?branch=master" src="https://secure.travis-ci.org/BetSmartMedia/Lazorse.png?branch=master" /></a>
+<p>Lazorse is a resource-oriented web-framework with a strong emphasis on
+extensibility and the separation of various concerns into independent
+<a class="reference external" href="http://stephensugden.com/middleware_guide/">middleware</a> layers.</p>
+<p>It includes middleware to find a resource, coerce URL parameters, dispatch to
+HTTP method handlers, and render a response.</p>
+<p>It borrows heavily from <a class="reference external" href="http://zappajs.org">other</a> <a class="reference external" href="https://github.com/kadirpekel/coffeemate">awesome</a> node.js <a class="reference external" href="http://expressjs.com/">web frameworks</a> but with a
+couple of twists designed to make writing machine-consumable ReSTful APIs a little easier. Because it&#8217;s all &#8220;just
 middleware&#8221;, you can also pull out and re-arrange the various pieces to better
 suit the needs of your application.</p>
 <div class="section" id="contents">
@@ -90,7 +90,18 @@ suit the needs of your application.</p>
 <li class="toctree-l2"><a class="reference internal" href="guide.html#including-example-requests">Including Example Requests</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api.html">API documentation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="api.html#exported-api">Exported API</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#app-building">App-building</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="api.html#app-building-properties">App-building properties</a></li>
+<li class="toctree-l3"><a class="reference internal" href="api.html#app-building-methods">App-building methods</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#middleware-methods">Middleware Methods</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#default-resources">Default Resources</a></li>
+<li class="toctree-l2"><a class="reference internal" href="api.html#request-contexts">Request Contexts</a></li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="upgrading.html">Upgrading from earlier versions</a></li>
 <li class="toctree-l1"><a class="reference internal" href="matching_semantics.html">URI Template matching</a></li>
 </ul>

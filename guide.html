@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Guide &mdash; Lazorse 0.5.7 documentation</title>
+    <title>Guide &mdash; Lazorse 0.6.1 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.5.7',
+        VERSION:     '0.6.1',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/waypoints.min.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    <link rel="top" title="Lazorse 0.5.7 documentation" href="index.html" />
+    <link rel="top" title="Lazorse 0.6.1 documentation" href="index.html" />
     <link rel="next" title="API documentation" href="api.html" />
     <link rel="prev" title="Lazorse!" href="index.html" /> 
   </head>
@@ -50,7 +50,6 @@
 <h3>Project Links</h3>
 <ul>
 
-<li><a href="index.html">Documentation Index</a></li>
 <li><a href="http://github.com/BetSmartMedia/Lazorse">Source on Github</a></li>
 <li><a href="http://github.com/BetSmartMedia/Lazorse/tree/master/examples">Example Apps</a></li>
 
@@ -87,7 +86,7 @@ viewed at <a class="reference external" href="https://github.com/BetSmartMedia/L
 <a class="reference external" href="http://tools.ietf.org/html/draft-gregorio-uritemplate-08">draft spec</a> for URI templates, but adds parameter matching
 semantics on top. (<a class="reference internal" href="matching_semantics.html#uri-template-matching"><em>Details and disclaimers</em></a>).</p>
 <p>You declare routes to resources using the <a class="reference internal" href="api.html#lazorse::LazyApp.resource" title="lazorse::LazyApp.resource"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.resource</span></tt></a> method:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span> <span class="o">-&gt;</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span><span class="p">.</span><span class="nx">server</span> <span class="nv">port: </span><span class="mi">3001</span><span class="p">,</span> <span class="o">-&gt;</span>
   <span class="nv">greetingLookup = english: </span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s2">&quot;Salut&quot;</span>
 
   <span class="c1"># This defines a resource that accepts both GET and POST</span>
@@ -156,7 +155,7 @@ parameter to only pre-defined languages:</p>
 </li>
 <li><p class="first">A request context object containing:</p>
 <ul>
-<li><p class="first">All helpers defined for the app (using <a class="reference internal" href="api.html#lazorse::LazyApp.helper" title="lazorse::LazyApp.helper"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.helper</span></tt></a>)</p>
+<li><p class="first">All helpers defined for the app using <a class="reference internal" href="api.html#lazorse::LazyApp.helper" title="lazorse::LazyApp.helper"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.helper</span></tt></a>.</p>
 </li>
 <li><p class="first"><tt class="docutils literal"><span class="pre">app</span></tt>: The lazorse app</p>
 </li>
@@ -236,7 +235,7 @@ you don&#8217;t need to manually import your error types if you don&#8217;t want
 <span class="s2">      Tip! me over and pour me out!</span>
 <span class="s2">    &quot;&quot;&quot;</span>
 
-  <span class="nx">@resource</span> <span class="s1">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="k">new</span> <span class="nx">TeapotError</span>
+  <span class="nx">@resource</span> <span class="s1">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="s1">&#39;TeapotError&#39;</span>
 </pre></div>
 </div>
 <p>Now our handlers (and coercions) can return 418s easily, no matter what file they
@@ -248,7 +247,7 @@ are defined in.</p>
 <tt class="docutils literal"><span class="pre">examples</span></tt> property. Each example should be an object with a <tt class="docutils literal"><span class="pre">method</span></tt>,
 <tt class="docutils literal"><span class="pre">vars</span></tt>, and (optional) <tt class="docutils literal"><span class="pre">body</span></tt> property. In our example app that would look
 like:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span> <span class="o">-&gt;</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span><span class="p">.</span><span class="nx">server</span> <span class="nv">port: </span><span class="mi">3001</span><span class="p">,</span> <span class="o">-&gt;</span>
   <span class="nv">greetingLookup = english: </span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s2">&quot;Salut&quot;</span>
 
   <span class="c1"># This defines a resource that accepts both GET and POST</span>

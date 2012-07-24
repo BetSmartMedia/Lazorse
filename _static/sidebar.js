@@ -10,7 +10,7 @@ $(document).ready(function() {
   var sectionNames = {}
   var sections = $('div.section').get().map(function (node) {
     node.yTop = yOffset(node)
-    var header = $(node).children('h1, h2').first()
+    var header = $(node).children('h1, h2, h3').first()
     node.yBottom = yOffset(header.get(0)) + header.outerHeight()
     sectionNames[node.id] = node
     return node
@@ -31,6 +31,7 @@ $(document).ready(function() {
   }
 
   function highlightSection(section) {
+    if (!section) return
     $(".currentsection").removeClass('currentsection')
     $(section).addClass('currentsection')
     $(".sphinxsidebar a[href='#" + section.id + "']")
