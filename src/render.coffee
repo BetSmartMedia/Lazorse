@@ -1,6 +1,6 @@
 exports['text/html'] = (req, res, next) ->
   res.setHeader 'Content-Type', 'text/html'
-  title  = req.route.shortName || 'Un-named route'
+  title  = req.resource.shortName || 'Un-named route'
   res.write "<html><head><title>#{title}</title></head><body>"
   writeHtml res, res.data
   res.end "</body></html>"
