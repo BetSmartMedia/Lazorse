@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Guide &mdash; Lazorse 0.6.1 documentation</title>
+    <title>Guide &mdash; Lazorse 0.6.2 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.1',
+        VERSION:     '0.6.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/waypoints.min.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    <link rel="top" title="Lazorse 0.6.1 documentation" href="index.html" />
+    <link rel="top" title="Lazorse 0.6.2 documentation" href="index.html" />
     <link rel="next" title="API documentation" href="api.html" />
     <link rel="prev" title="Lazorse!" href="index.html" /> 
   </head>
@@ -73,7 +73,7 @@ viewed at <a class="reference external" href="https://github.com/BetSmartMedia/L
 <div class="section" id="creating-an-app">
 <h2>Creating an App<a class="headerlink" href="#creating-an-app" title="Permalink to this headline">¶</a></h2>
 <p>Lazorse uses a &#8220;builder&#8221; pattern for creating app objects. You supply the function exported by Lazorse with a callback, and it runs that callback in the context of a newly created <a class="reference internal" href="api.html#lazorse::LazyApp" title="lazorse::LazyApp"><tt class="xref coffee coffee-class docutils literal"><span class="pre">LazyApp</span></tt></a> instance. So most apps end up looking something like this:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">lazorse = </span><span class="nx">require</span> <span class="s1">&#39;lazorse&#39;</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">lazorse = </span><span class="nx">require</span> <span class="s">&#39;lazorse&#39;</span>
 <span class="nx">lazorse</span> <span class="o">-&gt;</span>
   <span class="c1"># Various LazyApp methods here</span>
 </pre></div>
@@ -87,19 +87,19 @@ viewed at <a class="reference external" href="https://github.com/BetSmartMedia/L
 semantics on top. (<a class="reference internal" href="matching_semantics.html#uri-template-matching"><em>Details and disclaimers</em></a>).</p>
 <p>You declare routes to resources using the <a class="reference internal" href="api.html#lazorse::LazyApp.resource" title="lazorse::LazyApp.resource"><tt class="xref coffee coffee-meth docutils literal"><span class="pre">LazyApp.resource</span></tt></a> method:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span><span class="p">.</span><span class="nx">server</span> <span class="nv">port: </span><span class="mi">3001</span><span class="p">,</span> <span class="o">-&gt;</span>
-  <span class="nv">greetingLookup = english: </span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s2">&quot;Salut&quot;</span>
+  <span class="nv">greetingLookup = english: </span><span class="s">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s">&quot;Salut&quot;</span>
 
   <span class="c1"># This defines a resource that accepts both GET and POST</span>
-  <span class="nx">@resource</span> <span class="s2">&quot;/greeting/{language}&quot;</span><span class="o">:</span>
-    <span class="nv">description: </span><span class="s2">&quot;Per-language greetings&quot;</span>
-    <span class="nv">shortName: </span><span class="s1">&#39;localGreeting&#39;</span>
+  <span class="nx">@resource</span> <span class="s">&quot;/greeting/{language}&quot;</span><span class="o">:</span>
+    <span class="nv">description: </span><span class="s">&quot;Per-language greetings&quot;</span>
+    <span class="nv">shortName: </span><span class="s">&#39;localGreeting&#39;</span>
     <span class="nv">GET: </span> <span class="o">-&gt;</span> <span class="nx">@ok</span> <span class="nv">greeting: </span><span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">],</span> <span class="nv">language: </span><span class="nx">@language</span>
     <span class="nv">POST: </span><span class="o">-&gt;</span>
       <span class="k">if</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
         <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">greeting</span>
-        <span class="nx">@ok</span><span class="p">(</span><span class="s1">&#39;ok&#39;</span><span class="p">)</span>
+        <span class="nx">@ok</span><span class="p">(</span><span class="s">&#39;ok&#39;</span><span class="p">)</span>
       <span class="k">else</span>
-        <span class="nx">@error</span> <span class="s1">&#39;InvalidParameter&#39;</span><span class="p">,</span> <span class="s1">&#39;greeting&#39;</span><span class="p">,</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
+        <span class="nx">@error</span> <span class="s">&#39;InvalidParameter&#39;</span><span class="p">,</span> <span class="s">&#39;greeting&#39;</span><span class="p">,</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
 </pre></div>
 </div>
 <p>All of the keys are optional, but chances are you want to include at least one
@@ -131,14 +131,14 @@ will return an array that looks like this:</p>
 template matches <tt class="docutils literal"><span class="pre">req.url</span></tt> and captures a parameter of the same name. This
 example adds a coercion to our greeting app that will restrict the <tt class="docutils literal"><span class="pre">language</span></tt>
 parameter to only pre-defined languages:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="nx">@coerce</span> <span class="s2">&quot;language&quot;</span><span class="p">,</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">    A language to use for localized greetings.</span>
-<span class="s2">    Valid values: #{Object.keys(greetingLookup).join(&#39;, &#39;)}.</span>
-<span class="s2">  &quot;&quot;&quot;</span><span class="p">,</span> <span class="nf">(language, next) -&gt;</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="nx">@coerce</span> <span class="s">&quot;language&quot;</span><span class="p">,</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">    A language to use for localized greetings.</span>
+<span class="s">    Valid values: </span><span class="si">#{</span><span class="nb">Object</span><span class="p">.</span><span class="nx">keys</span><span class="p">(</span><span class="nx">greetingLookup</span><span class="p">).</span><span class="nx">join</span><span class="p">(</span><span class="s">&#39;, &#39;</span><span class="p">)</span><span class="si">}</span><span class="s">.</span>
+<span class="s">  &quot;&quot;&quot;</span><span class="p">,</span> <span class="nf">(language, next) -&gt;</span>
     <span class="nv">language = </span><span class="nx">language</span><span class="p">.</span><span class="nx">toLowerCase</span><span class="p">()</span>
     <span class="nx">unless</span> <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">language</span><span class="p">]</span>
-      <span class="nv">errName = </span><span class="nx">@req</span><span class="p">.</span><span class="nx">method</span> <span class="o">is</span> <span class="s1">&#39;GET&#39;</span> <span class="o">and</span> <span class="s1">&#39;NotFound&#39;</span> <span class="o">or</span> <span class="s1">&#39;InvalidParameter&#39;</span>
-      <span class="nx">@error</span> <span class="nx">errName</span><span class="p">,</span> <span class="s1">&#39;language&#39;</span><span class="p">,</span> <span class="nx">language</span>
+      <span class="nv">errName = </span><span class="nx">@req</span><span class="p">.</span><span class="nx">method</span> <span class="o">is</span> <span class="s">&#39;GET&#39;</span> <span class="o">and</span> <span class="s">&#39;NotFound&#39;</span> <span class="o">or</span> <span class="s">&#39;InvalidParameter&#39;</span>
+      <span class="nx">@error</span> <span class="nx">errName</span><span class="p">,</span> <span class="s">&#39;language&#39;</span><span class="p">,</span> <span class="nx">language</span>
     <span class="k">else</span>
       <span class="nx">next</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">language</span>
 </pre></div>
@@ -190,11 +190,11 @@ and falls back to JSON when it can&#8217;t provide it. You can easily add or ove
 the renderer for a new content type like so:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre>  <span class="c1"># Uses https://github.com/visionmedia/consolidate.js</span>
   <span class="c1"># and a non-standard resource property ``view``</span>
-  <span class="nv">consolidate = </span><span class="nx">require</span> <span class="s1">&#39;consolidate&#39;</span>
-  <span class="nx">@render</span> <span class="s1">&#39;text/html&#39;</span><span class="p">,</span> <span class="nf">(req, res, next) -&gt;</span>
-    <span class="nx">res</span><span class="p">.</span><span class="nx">setHeader</span> <span class="s1">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s1">&#39;text/html&#39;</span>
-    <span class="nv">engine = </span><span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">engine</span> <span class="o">or</span> <span class="s1">&#39;swig&#39;</span>
-    <span class="nv">path   = </span><span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">path</span> <span class="o">or</span> <span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">shortName</span> <span class="o">or</span> <span class="s1">&#39;fallback.html&#39;</span>
+  <span class="nv">consolidate = </span><span class="nx">require</span> <span class="s">&#39;consolidate&#39;</span>
+  <span class="nx">@render</span> <span class="s">&#39;text/html&#39;</span><span class="p">,</span> <span class="nf">(req, res, next) -&gt;</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">setHeader</span> <span class="s">&#39;Content-Type&#39;</span><span class="p">,</span> <span class="s">&#39;text/html&#39;</span>
+    <span class="nv">engine = </span><span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">engine</span> <span class="o">or</span> <span class="s">&#39;swig&#39;</span>
+    <span class="nv">path   = </span><span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">view</span><span class="o">?</span><span class="p">.</span><span class="nx">path</span> <span class="o">or</span> <span class="nx">req</span><span class="p">.</span><span class="nx">resource</span><span class="p">.</span><span class="nx">shortName</span> <span class="o">or</span> <span class="s">&#39;fallback.html&#39;</span>
     <span class="nx">consolidate</span><span class="p">[</span><span class="nx">engine</span><span class="p">]</span> <span class="nx">path</span><span class="p">,</span> <span class="nx">res</span><span class="p">.</span><span class="nx">data</span><span class="p">,</span> <span class="nf">(err, html) -&gt;</span>
       <span class="k">if</span> <span class="nx">err</span><span class="o">?</span> <span class="k">then</span> <span class="nx">next</span> <span class="nx">err</span> <span class="k">else</span> <span class="nx">res</span><span class="p">.</span><span class="nx">end</span> <span class="nx">html</span>
 </pre></div>
@@ -202,8 +202,8 @@ the renderer for a new content type like so:</p>
 <p>With this in place, we could add a <tt class="docutils literal"><span class="pre">view</span></tt> property to any resource and have it
 rendered to html using a template:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="c1"># a room with a view</span>
-<span class="nx">@resource</span> <span class="s1">&#39;/room/{id}&#39;</span><span class="o">:</span>
-  <span class="nv">view: </span><span class="p">{</span><span class="nv">engine: </span><span class="s1">&#39;eco&#39;</span><span class="p">,</span> <span class="nv">path: </span><span class="s1">&#39;room.eco&#39;</span><span class="p">}</span>
+<span class="nx">@resource</span> <span class="s">&#39;/room/{id}&#39;</span><span class="o">:</span>
+  <span class="nv">view: </span><span class="p">{</span><span class="nv">engine: </span><span class="s">&#39;eco&#39;</span><span class="p">,</span> <span class="nv">path: </span><span class="s">&#39;room.eco&#39;</span><span class="p">}</span>
   <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="p">...</span>
 </pre></div>
 </div>
@@ -228,14 +228,14 @@ you don&#8217;t need to manually import your error types if you don&#8217;t want
   <span class="c1"># and register it with the app</span>
   <span class="nx">@error</span> <span class="nx">TeapotError</span><span class="p">,</span> <span class="nf">(err, req, res, next) -&gt;</span>
     <span class="nv">res.statusCode = </span><span class="mi">418</span>
-    <span class="nx">res</span><span class="p">.</span><span class="nx">end</span> <span class="s2">&quot;&quot;&quot;</span>
-<span class="s2">      I&#39;m a little teapot, short and stout.</span>
-<span class="s2">      Here is my handle, here is my spout.</span>
-<span class="s2">      When I get all steamed up, hear me shout!</span>
-<span class="s2">      Tip! me over and pour me out!</span>
-<span class="s2">    &quot;&quot;&quot;</span>
+    <span class="nx">res</span><span class="p">.</span><span class="nx">end</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">      I&#39;m a little teapot, short and stout.</span>
+<span class="s">      Here is my handle, here is my spout.</span>
+<span class="s">      When I get all steamed up, hear me shout!</span>
+<span class="s">      Tip! me over and pour me out!</span>
+<span class="s">    &quot;&quot;&quot;</span>
 
-  <span class="nx">@resource</span> <span class="s1">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="s1">&#39;TeapotError&#39;</span>
+  <span class="nx">@resource</span> <span class="s">&#39;/teapot&#39;</span><span class="o">:</span> <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="nx">@error</span> <span class="s">&#39;TeapotError&#39;</span>
 </pre></div>
 </div>
 <p>Now our handlers (and coercions) can return 418s easily, no matter what file they
@@ -248,22 +248,22 @@ are defined in.</p>
 <tt class="docutils literal"><span class="pre">vars</span></tt>, and (optional) <tt class="docutils literal"><span class="pre">body</span></tt> property. In our example app that would look
 like:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">lazorse</span><span class="p">.</span><span class="nx">server</span> <span class="nv">port: </span><span class="mi">3001</span><span class="p">,</span> <span class="o">-&gt;</span>
-  <span class="nv">greetingLookup = english: </span><span class="s2">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s2">&quot;Salut&quot;</span>
+  <span class="nv">greetingLookup = english: </span><span class="s">&quot;Hi&quot;</span><span class="p">,</span> <span class="nv">french: </span><span class="s">&quot;Salut&quot;</span>
 
   <span class="c1"># This defines a resource that accepts both GET and POST</span>
-  <span class="nx">@resource</span> <span class="s2">&quot;/greeting/{language}&quot;</span><span class="o">:</span>
-    <span class="nv">description: </span><span class="s2">&quot;Per-language greetings&quot;</span>
-    <span class="nv">shortName: </span><span class="s1">&#39;localGreeting&#39;</span>
+  <span class="nx">@resource</span> <span class="s">&quot;/greeting/{language}&quot;</span><span class="o">:</span>
+    <span class="nv">description: </span><span class="s">&quot;Per-language greetings&quot;</span>
+    <span class="nv">shortName: </span><span class="s">&#39;localGreeting&#39;</span>
     <span class="nv">GET: </span> <span class="o">-&gt;</span> <span class="nx">@ok</span> <span class="nv">greeting: </span><span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">],</span> <span class="nv">language: </span><span class="nx">@language</span>
     <span class="nv">POST: </span><span class="o">-&gt;</span>
       <span class="k">if</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
         <span class="nx">greetingLookup</span><span class="p">[</span><span class="nx">@language</span><span class="p">]</span> <span class="o">=</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="p">.</span><span class="nx">greeting</span>
-        <span class="nx">@ok</span><span class="p">(</span><span class="s1">&#39;ok&#39;</span><span class="p">)</span>
+        <span class="nx">@ok</span><span class="p">(</span><span class="s">&#39;ok&#39;</span><span class="p">)</span>
       <span class="k">else</span>
-        <span class="nx">@error</span> <span class="s1">&#39;InvalidParameter&#39;</span><span class="p">,</span> <span class="s1">&#39;greeting&#39;</span><span class="p">,</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
+        <span class="nx">@error</span> <span class="s">&#39;InvalidParameter&#39;</span><span class="p">,</span> <span class="s">&#39;greeting&#39;</span><span class="p">,</span> <span class="nx">@req</span><span class="p">.</span><span class="nx">body</span><span class="o">?</span><span class="p">.</span><span class="nx">greeting</span>
     <span class="nv">examples: </span><span class="p">[</span>
-      <span class="p">{</span><span class="nv">method: </span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">language: </span><span class="s1">&#39;english&#39;</span><span class="p">}}</span>
-      <span class="p">{</span><span class="nv">method: </span><span class="s1">&#39;POST&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">language: </span><span class="s1">&#39;english&#39;</span><span class="p">},</span> <span class="nv">body: </span><span class="s2">&quot;howdy&quot;</span><span class="p">}</span>
+      <span class="p">{</span><span class="nv">method: </span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">language: </span><span class="s">&#39;english&#39;</span><span class="p">}}</span>
+      <span class="p">{</span><span class="nv">method: </span><span class="s">&#39;POST&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">language: </span><span class="s">&#39;english&#39;</span><span class="p">},</span> <span class="nv">body: </span><span class="s">&quot;howdy&quot;</span><span class="p">}</span>
     <span class="p">]</span>
 </pre></div>
 </div>
@@ -292,7 +292,7 @@ expanded into a full URI path, so <tt class="docutils literal"><span class="pre"
     </div> 
     <div class="footer">
         &copy; Copyright 2011, Stephen Sugden, Judd Vinet.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>

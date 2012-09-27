@@ -7,7 +7,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>API documentation &mdash; Lazorse 0.6.1 documentation</title>
+    <title>API documentation &mdash; Lazorse 0.6.2 documentation</title>
     
     <link rel="stylesheet" href="_static/basic.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -16,7 +16,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '',
-        VERSION:     '0.6.1',
+        VERSION:     '0.6.2',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -27,7 +27,7 @@
     <script type="text/javascript" src="_static/doctools.js"></script>
     <script type="text/javascript" src="_static/waypoints.min.js"></script>
     <script type="text/javascript" src="_static/sidebar.js"></script>
-    <link rel="top" title="Lazorse 0.6.1 documentation" href="index.html" />
+    <link rel="top" title="Lazorse 0.6.2 documentation" href="index.html" />
     <link rel="next" title="Upgrading from earlier versions" href="upgrading.html" />
     <link rel="prev" title="Guide" href="guide.html" /> 
   </head>
@@ -78,12 +78,12 @@
 </pre></div>
 </div>
 <p>Or, if you&#8217;d rather get back a connect app ready for more <tt class="docutils literal"><span class="pre">.use()</span></tt> calls:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">connectApp = </span><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lazorse&#39;</span><span class="p">).</span><span class="nx">connect</span> <span class="o">-&gt;</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nv">connectApp = </span><span class="nx">require</span><span class="p">(</span><span class="s">&#39;lazorse&#39;</span><span class="p">).</span><span class="nx">connect</span> <span class="o">-&gt;</span>
   <span class="c1"># Again, build the app here</span>
 </pre></div>
 </div>
 <p>Finally, if you&#8217;d rather start a server automatically after the app is built:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">require</span><span class="p">(</span><span class="s1">&#39;lazorse&#39;</span><span class="p">).</span><span class="nx">server</span> <span class="nv">port: </span><span class="mi">1234</span><span class="p">,</span> <span class="nv">host: </span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">require</span><span class="p">(</span><span class="s">&#39;lazorse&#39;</span><span class="p">).</span><span class="nx">server</span> <span class="nv">port: </span><span class="mi">1234</span><span class="p">,</span> <span class="nv">host: </span><span class="s">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="o">-&gt;</span>
   <span class="c1"># A pattern is emerging...</span>
 </pre></div>
 </div>
@@ -118,14 +118,14 @@ any of these resources by setting their path prefix to <tt class="docutils liter
 <em class="property">method </em><tt class="descname">LazyApp.resource</tt><big>(</big><em>specs</em><big>)</big><a class="headerlink" href="#lazorse::LazyApp.resource" title="Permalink to this definition">¶</a></dt>
 <dd><p>Register one or more resources. The <tt class="docutils literal"><span class="pre">specs</span></tt> object should map URI templates to
 an object describing the resource. For example:</p>
-<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">@resource</span> <span class="s1">&#39;/{category}/{thing}&#39;</span><span class="o">:</span>
-  <span class="nv">shortName: </span><span class="s2">&quot;categorizedThing&quot;</span> <span class="c1"># for internal linking and client libs.</span>
-  <span class="nv">description: </span><span class="s2">&quot;Things that belong to a category&quot;</span> <span class="c1"># for documentation.</span>
+<div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">@resource</span> <span class="s">&#39;/{category}/{thing}&#39;</span><span class="o">:</span>
+  <span class="nv">shortName: </span><span class="s">&quot;categorizedThing&quot;</span> <span class="c1"># for internal linking and client libs.</span>
+  <span class="nv">description: </span><span class="s">&quot;Things that belong to a category&quot;</span> <span class="c1"># for documentation.</span>
   <span class="nv">GET: </span><span class="o">-&gt;</span> <span class="p">...</span>
   <span class="nv">POST: </span><span class="o">-&gt;</span> <span class="p">...</span>
   <span class="nv">PUT: </span><span class="o">-&gt;</span> <span class="p">...</span>
   <span class="nv">examples: </span><span class="p">[</span>
-    <span class="p">{</span><span class="nv">method: </span><span class="s1">&#39;GET&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">category: </span><span class="s1">&#39;cats&#39;</span><span class="p">,</span> <span class="nv">thing: </span><span class="s1">&#39;jellybean&#39;</span><span class="p">}}</span>
+    <span class="p">{</span><span class="nv">method: </span><span class="s">&#39;GET&#39;</span><span class="p">,</span> <span class="nv">vars: </span><span class="p">{</span><span class="nv">category: </span><span class="s">&#39;cats&#39;</span><span class="p">,</span> <span class="nv">thing: </span><span class="s">&#39;jellybean&#39;</span><span class="p">}}</span>
   <span class="p">]</span>
 </pre></div>
 </div>
@@ -243,10 +243,10 @@ additional parameters for that middleware.</li>
 </table>
 <p>Examples:</p>
 <div class="highlight-coffeescript"><div class="highlight"><pre><span class="nx">@before</span> <span class="nx">@findResource</span><span class="p">,</span> <span class="nf">(req, res, next) -&gt;</span>
-  <span class="nx">res</span><span class="p">.</span><span class="nx">setHeader</span> <span class="s1">&#39;X-Nihilo&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span>
+  <span class="nx">res</span><span class="p">.</span><span class="nx">setHeader</span> <span class="s">&#39;X-Nihilo&#39;</span><span class="p">,</span> <span class="s">&#39;&#39;</span>
   <span class="nx">next</span><span class="p">()</span>
 
-<span class="nx">@before</span> <span class="nx">@findResource</span><span class="p">,</span> <span class="s1">&#39;static&#39;</span><span class="p">,</span> <span class="nx">__dirname</span> <span class="o">+</span> <span class="s1">&#39;/public&#39;</span>
+<span class="nx">@before</span> <span class="nx">@findResource</span><span class="p">,</span> <span class="s">&#39;static&#39;</span><span class="p">,</span> <span class="nx">__dirname</span> <span class="o">+</span> <span class="s">&#39;/public&#39;</span>
 </pre></div>
 </div>
 </dd></dl>
@@ -355,7 +355,7 @@ names with variable names.</p>
     </div> 
     <div class="footer">
         &copy; Copyright 2011, Stephen Sugden, Judd Vinet.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
