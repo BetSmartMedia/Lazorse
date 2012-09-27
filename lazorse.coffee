@@ -357,13 +357,18 @@ class LazyApp
     ``@passErrors`` is set to false (the default) any unknown error will send
     a generic 500 error.
     ###
-    errName = err.constructor.name
+    # Check if err has a valid HTTP error code
+    errCode = Number err.code
+    if isNaN(errCode) or not (400 <= errCode <= 500)
+      errCode = null
+
+    errName = err.constructor?.name
     if @errorHandlers[errName]?
       @errorHandlers[errName](err, req, res, next)
-    else if @passErrors and not (err.code and err.message)
+    else if @passErrors and not (errCode and err.message)
       next err, req, res
     else
-      res.statusCode = err.code or 500
+      res.statusCode = errCode or 500
       message = ('string' is typeof err and err) or err.message or "Internal error"
       res.data = error: message
       # @renderer will re-error if req.resource isn't set (e.g. no resource matched)
