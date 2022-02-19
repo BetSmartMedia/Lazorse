@@ -23,8 +23,8 @@ suit the needs of your application.
 
 Be sure to check out the guide_ and `API docs`_!
 
-.. _guide: http://betsmartmedia.github.com/Lazorse/guide.html
-.. _API docs: http://betsmartmedia.github.com/Lazorse/api.html
+.. _guide: http://betsmartmedia.github.io/Lazorse/guide.html
+.. _API docs: http://betsmartmedia.github.io/Lazorse/api.html
 
 What's the deal with the name?
 ------------------------------
